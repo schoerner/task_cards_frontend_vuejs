@@ -6,8 +6,15 @@
         <p class="card-text">{{ itemDescription }}</p>
         <pre>ID: {{ itemId }}</pre>
         <pre>CreatorID: {{ itemCreator }}</pre>
-        <button class="btn btn-primary" @click="editItem">Edit</button>
-        <button class="btn btn-danger" @click="deleteItem">Delete</button>
+        <p>
+          <button class="btn btn-primary" @click="editItem">Edit</button>
+          <button v-show="!showSureToDeleteDialog" class="btn btn-danger" @click="areYouSureToDeleteItemDialog">Delete</button>
+        </p>
+        <div v-show="showSureToDeleteDialog" class="alert alert-primary" role="alert">
+          <p>Do you really want to delete this item?</p>
+          <button class="btn btn-primary" @click="notSureToDeleteItem">No</button>
+          <button class="btn btn-danger" @click="deleteItem">Yes, delete!</button>
+        </div>
       </div>
     </div>
   </div>
@@ -17,6 +24,7 @@
 export default {
   data() {
     return {
+      showSureToDeleteDialog: false
     }
   },
   // props: ['itemName','itemDesc','isFavorite']
@@ -34,7 +42,7 @@ export default {
       required: false,
       default: 'This is the default description.',
       validator: function (value) {
-        if (2 < value.length && value.length < 120) {
+        if (2 <= value.length && value.length < 120) {
           return true;
         }
         else {
@@ -42,15 +50,7 @@ export default {
         }
       }
     },
-    itemCreator: {
-      type: Number,
-      required: false
-    },
-    isFavorite: {
-      type: Boolean,
-      required: false,
-      default: false
-    }
+    itemCreator: Object
   },
   emits: [
     'edit-item',
@@ -62,23 +62,18 @@ export default {
     editItem() {
       this.$emit('edit-item', this.itemId)
     },
+    areYouSureToDeleteItemDialog() {
+      this.showSureToDeleteDialog = true
+    },
+    notSureToDeleteItem() {
+      this.showSureToDeleteDialog = false
+    },
     deleteItem() {
       this.$emit('delete-item', this.itemId)
+      this.showSureToDeleteDialog = false
     }
   }
 };
 </script>
 
-<style scoped>
-#red {
-  font-weight: bold;
-  color: rgb(144, 12, 12);
-}
-
-h1,
-h2,
-h3,
-p {
-  font-family: 'Trebuchet MS', 'Lucida Sans Unicode', 'Lucida Grande', 'Lucida Sans', Arial, sans-serif;
-}
-</style>
+<style scoped></style>
