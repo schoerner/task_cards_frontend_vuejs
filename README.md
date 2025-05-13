@@ -1,5 +1,7 @@
 # vue_task
 
+vue_task ist ein Test-Projekt zur didaktischen Analyse von Vue.js für den Unterricht.
+
 This template should help get you started developing with Vue 3 in Vite.
 
 ## Recommended IDE Setup
@@ -13,7 +15,13 @@ See [Vite Configuration Reference](https://vite.dev/config/).
 ## Project Setup
 
 ```sh
+Set-ExecutionPolicy -ExecutionPolicy Unrestricted -Scope Process
+npm init vue@latest
 npm install
+npm install axios
+npm install vue-router
+npm install bootstrap --save
+``` zerschossen npm install vue bootstrap bootstrap-vue --save
 ```
 
 ### Compile and Hot-Reload for Development

@@ -123,7 +123,7 @@ export default {
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify( dataToSave )
             };
-            fetch("http://localhost:8088/rest/tasks/edit/" + this.editItemId, requestOptions)
+            fetch("http://localhost:8088/rest/tasks", requestOptions)
                 .then(async response => {
                         const isJson = response.headers.get('content-type').includes('application/json');
                         const data = isJson && await response.json();

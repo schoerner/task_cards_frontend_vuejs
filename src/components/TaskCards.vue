@@ -112,7 +112,7 @@ export default {
             //this.items = removed
 
             // DELETE request using fetch with error handling
-            fetch('http://localhost:8088/rest/tasks/delete/' + itemId, { method: 'DELETE' })
+            fetch('http://localhost:8088/rest/tasks/' + itemId, { method: 'DELETE' })
                 .then(async response => {
                     // check for error response
                     if (!response.ok) {
