@@ -37,15 +37,15 @@
                     </div>
                 </div>
                 <div class="row mb-3">
-                    <label for="title"  class="col-sm-2 col-form-label">Description: </label>
+                    <label for="description"  class="col-sm-2 col-form-label">Description: </label>
                     <div class="col-sm-10">
                         <textarea id="description" placeholder="Description" rows="4" cols="50" class="form-control" v-model="newItemDescription" />
                     </div>
                 </div>
                 <div class="row mb-3">
-                    <label for="title"  class="col-sm-2 col-form-label">Creator: </label>
+                    <label for="creator_id"  class="col-sm-2 col-form-label">Creator: </label>
                     <div class="col-sm-10">
-                        <input type="number" v-model="newItemCreator">
+                        <input id="creator_id" type="number" v-model="newItemCreator">
                     </div>
                 </div>
                 <button class="btn btn-primary" type="submit">Add</button>
@@ -86,7 +86,7 @@ export default {
             // todo: do some consistency checks here
             const dataToSave = {
                 title: this.newItemTitle,
-                description: this.newItemDesccription,
+                description: this.newItemDescription,
                 creator: { id: this.newItemCreator }
             }
             // Example from https://medium.com/@pasb/how-to-test-cors-with-postman-local-or-domain-991acbb2c046
