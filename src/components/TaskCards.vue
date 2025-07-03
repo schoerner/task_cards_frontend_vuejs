@@ -36,7 +36,7 @@
             <div class="row">
                 <div class="row g-3 row-cols-1 row-cols-sm-2 row-cols-md-3">
                     <task-item v-for="x in items" :key="x.id" :item-id="x.id" :item-title="x.title"
-                        :item-description="x.description" :item-creator="x.creator"
+                        :item-description="x.description" :item-creator="x.creator" :item-time-records="x.timeRecords"
                         @edit-item="editItem" @delete-item="deleteItem" />
                 </div>
             </div>

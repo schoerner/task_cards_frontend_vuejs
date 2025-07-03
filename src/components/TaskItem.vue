@@ -6,6 +6,7 @@
         <p class="card-text">{{ itemDescription }}</p>
         <pre>ID: {{ itemId }}</pre>
         <pre>CreatorID: {{ itemCreator }}</pre>
+        <pre>TimeRecords: {{ itemTimeRecords }}</pre>
         <p>
           <button class="btn btn-primary" @click="editItem">Edit</button>
           <button v-show="!showSureToDeleteDialog" class="btn btn-danger" @click="areYouSureToDeleteItemDialog">Delete</button>
@@ -50,7 +51,8 @@ export default {
         }
       }
     },
-    itemCreator: Object
+    itemCreator: Object,
+    itemTimeRecords: Object
   },
   emits: [
     'edit-item',
