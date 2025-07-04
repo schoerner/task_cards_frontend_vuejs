@@ -2,11 +2,11 @@
   <div class="col">
     <div class="card shadow-sm" v-on:click="startStop" v-bind:class="{active: isActive, inactive: !isActive}">
       <div class="card-body">
-        <h3 class="card-title">{{ itemTitle }}</h3>
-        <p class="card-text">{{ itemDescription }}</p>
-        <pre>ID: {{ itemId }}</pre>
-        <pre>CreatorID: {{ itemCreator }}</pre>
-        <pre>TimeRecords: {{ itemTimeRecords }}</pre>
+        <h3 class="card-title">{{ task.title }}</h3>
+        <p class="card-text">{{ task.description }}</p>
+        <pre>ID: {{ task.id }}</pre>
+        <pre>CreatorID: {{ task.creator }}</pre>
+        <pre>TimeRecords: {{ task.timeRecords }}</pre>
         <p>
           <button class="btn btn-primary" @click="editItem">Edit</button>
           <button v-show="!showSureToDeleteDialog" class="btn btn-danger" @click="areYouSureToDeleteItemDialog">Delete</button>
@@ -32,31 +32,9 @@ export default {
       isActive: false
     }
   },
-  // props: ['itemName','itemDesc','isFavorite']
   props: {
-    itemId: {
-      type: Number,
-      required: false
-    },
-    itemTitle: {
-      type: String,
-      required: true
-    },
-    itemDescription: {
-      type: String,
-      required: false,
-      default: 'This is the default description.',
-      validator: function (value) {
-        if (2 <= value.length && value.length < 120) {
-          return true;
-        }
-        else {
-          return false;
-        }
-      }
-    },
-    itemCreator: Object,
-    itemTimeRecords: Object
+    task: Object,
+    timeRecord: Object
   },
   emits: [
     'edit-item',
@@ -66,32 +44,31 @@ export default {
   },
   methods: {
     startStop() {
-      /*
-        if (data.task.active) {
+        if (this.task.active) {
             console.group("");
-            console.log(timeRecord);
+            console.log(this.timeRecord);
             axios
-                .put("http://localhost:8088/rest/time_records", timeRecord)
+                .put("http://localhost:8088/rest/time_records", this.timeRecord)
                 .then((response) => {
                     console.log(response.status);
                     console.log(response.data);
-                    setTimeRecord(response.data); // todo
+                    this.timeRecord = response.data; // todo
                 })
                 .catch((e) => console.log('something went wrong :(', e));
         }
         else {
-            axios.post("http://localhost:8088/rest/time_records", data.task )
+            axios.post("http://localhost:8088/rest/time_records", this.task )
                 .then(function (response) {
                     console.log(response);
-                    setTimeRecord(response.data); // todo
+                    this.timeRecord = response.data; // todo
                 })
                 .catch(function (error) {
                     console.log(error);
                 });
         }
-        data.task.active = !data.task.active;
-        */
-      this.isActive = !this.isActive
+        this.task.active = !this.task.active;
+        
+      //this.isActive = !this.isActive
     },
     editItem() {
       this.$emit('edit-item', this.itemId)

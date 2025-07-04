@@ -35,9 +35,10 @@
             </div>
             <div class="row">
                 <div class="row g-3 row-cols-1 row-cols-sm-2 row-cols-md-3">
-                    <task-item v-for="x in items" :key="x.id" :item-id="x.id" :item-title="x.title"
+                    <task-card v-for="x in items" :task="x" @edit-item="editItem" @delete-item="deleteItem" />
+                    <!-- <task-item v-for="x in items" :key="x.id" :item-id="x.id" :item-title="x.title"
                         :item-description="x.description" :item-creator="x.creator" :item-time-records="x.timeRecords"
-                        @edit-item="editItem" @delete-item="deleteItem" />
+                        @edit-item="editItem" @delete-item="deleteItem" /> -->
                 </div>
             </div>
         </div>
@@ -47,7 +48,8 @@
 <script>
 
 import axios from 'axios';
-import TaskItem from './TaskItem.vue'
+//import TaskItem from './TaskItem.vue'
+import TaskCard from './TaskCard.vue';
 import AddTaskItem from './AddTaskItem.vue'
 import EditTaskItem from './EditTaskItem.vue'
 
@@ -71,7 +73,8 @@ export default {
     mounted() {
     },
     components: {
-        'task-item': TaskItem,
+        //'task-item': TaskItem,
+        'task-card': TaskCard,
         'add-task-item': AddTaskItem,
         'edit-task-item': EditTaskItem
     },

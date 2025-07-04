@@ -14,6 +14,8 @@ See [Vite Configuration Reference](https://vite.dev/config/).
 
 ## Project Setup
 
+## under mac os: https://www.youtube.com/watch?v=S8ovFOnB4Sg
+
 ```sh
 Set-ExecutionPolicy -ExecutionPolicy Unrestricted -Scope Process
 npm init vue@latest

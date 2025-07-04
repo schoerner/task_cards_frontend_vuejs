@@ -1,7 +1,3 @@
-<!-- 
- Set-ExecutionPolicy -ExecutionPolicy Unrestricted -Scope Process
- npm run dev
- -->
 <template>
   <header class="navbar navbar-expand-lg bd-navbar navbar-dark sticky-top">
     <nav class="container-xxl bd-gutter flex-wrap flex-lg-nowrap" aria-label="Main navigation">
@@ -37,6 +33,12 @@
                       <path d="M8 4a.5.5 0 0 1 .5.5v3h3a.5.5 0 0 1 0 1h-3v3a.5.5 0 0 1-1 0v-3h-3a.5.5 0 0 1 0-1h3v-3A.5.5 0 0 1 8 4"/>
                   </svg>
               </router-link>
+          </li>
+          <li class="nav-item">
+            <router-link to="/signup" class="nav-link">Sign up</router-link><br>
+          </li>
+          <li class="nav-item">
+            <router-link to="/login" class="nav-link">Log in</router-link><br>
           </li>
           <li class="nav-item">
             <router-link to="/about" class="nav-link">About</router-link><br>

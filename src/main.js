@@ -5,6 +5,8 @@ import AddTaskItem from './components/AddTaskItem.vue'
 import TaskCards from './components/TaskCards.vue'
 import { createRouter, createWebHistory } from 'vue-router'
 import 'bootstrap/dist/css/bootstrap.min.css'
+import UserSignUp from './components/UserSignUp.vue'
+import UserLogin from './components/UserLogin.vue'
 
 const router = createRouter( {
     history: createWebHistory(),
@@ -12,6 +14,8 @@ const router = createRouter( {
         { path: "/", component: TaskCards },
         { path: "/tasks", component: TaskCards },
         { path: "/tasks/add", component: AddTaskItem },
+        { path: "/login", component: UserLogin },
+        { path: "/signup", component: UserSignUp },
         { path: "/about", component: About }
     ]
 })
