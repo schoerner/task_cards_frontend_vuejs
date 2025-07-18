@@ -123,7 +123,7 @@ export default {
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify( dataToSave )
             };
-            fetch("http://localhost:8088/rest/tasks", requestOptions)
+            fetch("/api/tasks", requestOptions)
                 .then(async response => {
                         const isJson = response.headers.get('content-type').includes('application/json');
                         const data = isJson && await response.json();
@@ -151,7 +151,7 @@ export default {
         async fetchData() {
             console.log("fetchData")
             //this.data = await axios.get("https://random-data-api.com/api/v2/users")
-            const tmpResult = await axios.get("http://localhost:8088/rest/tasks/" + this.editItemId)
+            const tmpResult = await axios.get("/api/tasks/" + this.editItemId)
             this.result = tmpResult.data
 
             this.editItemTitle = tmpResult.data.title

@@ -4,7 +4,7 @@
       <div class="d-lg-none" style="width: 2.25rem;"></div>
       <router-link to="/" class="navbar-brand">
         <img src="/img/test_logo.drawio.svg" alt="Logo acosci.de" class="d-inline-block align-text-top">
-        acosci.de
+        <span style="font-style: italic;">BS1 BT GmbH</span>
       </router-link>
       <!--<a class="navbar-brand" th:href="@{/}">-->
       <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarScroll"

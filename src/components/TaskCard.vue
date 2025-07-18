@@ -9,7 +9,8 @@
         <pre>TimeRecords: {{ task.timeRecords }}</pre>
         <p>
           <button class="btn btn-primary" @click="editItem">Edit</button>
-          <button v-show="!showSureToDeleteDialog" class="btn btn-danger" @click="areYouSureToDeleteItemDialog">Delete</button>
+          <button v-show="!showSureToDeleteDialog" class="btn btn-danger" @click="areYouSureToDeleteItemDialog">Delete
+          </button>
         </p>
         <div v-show="showSureToDeleteDialog" class="alert alert-primary" role="alert">
           <p>Do you really want to delete this item?</p>
@@ -40,35 +41,32 @@ export default {
     'edit-item',
     'delete-item'
   ],
-  computed: {
-  },
+  computed: {},
   methods: {
     startStop() {
-        if (this.task.active) {
-            console.group("");
-            console.log(this.timeRecord);
-            axios
-                .put("http://localhost:8088/rest/time_records", this.timeRecord)
-                .then((response) => {
-                    console.log(response.status);
-                    console.log(response.data);
-                    this.timeRecord = response.data; // todo
-                })
-                .catch((e) => console.log('something went wrong :(', e));
-        }
-        else {
-            axios.post("http://localhost:8088/rest/time_records", this.task )
-                .then(function (response) {
-                    console.log(response);
-                    this.timeRecord = response.data; // todo
-                })
-                .catch(function (error) {
-                    console.log(error);
-                });
-        }
-        this.task.active = !this.task.active;
-        
-      //this.isActive = !this.isActive
+      console.group("startStop()");
+      if (this.task.active) {
+        axios
+            .get("/api/tasks/stop/" + this.itemId)
+            .then((response) => {
+              console.log(response.status);
+              console.log(response.data);
+              this.task = response.data; // todo
+            })
+            .catch((e) => console.log('something went wrong :(', e));
+      } else {
+        axios
+            .get("/api/tasks/start/" + this.itemId)
+            .then(function (response) {
+              console.log(response.status);
+              console.log(response.data);
+              this.task = response.data; // todo
+            })
+            .catch(function (error) {
+              console.log(error);
+            });
+      }
+      this.isActive = this.task.active;
     },
     editItem() {
       this.$emit('edit-item', this.itemId)
@@ -92,6 +90,7 @@ export default {
   background-color: #afdfaf;
   color: darkgreen;
 }
+
 .inactive {
   background-color: lightgray;
   color: black;

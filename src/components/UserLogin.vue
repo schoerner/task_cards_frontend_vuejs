@@ -26,13 +26,13 @@
                     <div class="row mb-3">
                         <label for="email"  class="col-sm-2 col-form-label">Email: </label>
                         <div class="col-sm-10">
-                            <input id="email" v-model="email" playceholder="user@test.org" ref="emailRef" required>
+                            <input id="email" v-model="email" placeholder="user@test.org" ref="emailRef" required>
                         </div>
                     </div>
                     <div class="row mb-3">
                         <label for="password"  class="col-sm-2 col-form-label">Password: </label>
                         <div class="col-sm-10">
-                            <input id="password" placeholder="****" type="password" rows="4" cols="50" class="form-control" v-model="password" />
+                            <input id="password" placeholder="****" type="password" class="form-control" v-model="password" />
                         </div>
                     </div>
                     <button class="btn btn-primary" type="submit">Log in</button>
@@ -44,7 +44,9 @@
 </template>
 
 <script>
+// todo https://www.bezkoder.com/vue-3-authentication-jwt/#google_vignette
 import axios from 'axios';
+import setAuthHeader from "@/utils/setAuthHeader.js";
 
 export default {
     data() {
@@ -52,6 +54,7 @@ export default {
             showForm: true,
             email: "",
             password: "",
+            loginResponse: "",
             status: "",
             errorMessage: ""
         }
@@ -63,25 +66,33 @@ export default {
                 email: this.email,
                 password: this.password
             }
-            // Example from https://medium.com/@pasb/how-to-test-cors-with-postman-local-or-domain-991acbb2c046
-            // async //const response = await axios.post("http://localhost:8088/rest/tasks", dataToSave)
-            //this.newItemId = response.data.id;
-            axios.post("http://localhost:8088/auth/login", user)
-                .then(response => {
-                    this.newItemId = response.data.id
-                    this.status = "You were successfully logged in "
-                    
-                    this.email = ""
-                    this.password = ""
+            setAuthHeader();
 
-                    this.showForm = false
+            // Example from https://medium.com/@pasb/how-to-test-cors-with-postman-local-or-domain-991acbb2c046
+            // async //const response = await axios.post("/rest/tasks", dataToSave)
+            //this.newItemId = response.data.id;
+            axios.post("/api/auth/login", user)
+                .then(response => {
+                    console.log(response.data)
+                    this.loginResponse = response.data;
+                    localStorage.setItem("jwtToken", response.data.token);
+                    setAuthHeader(response.data.token);
+
+                    this.status = "You were successfully logged in."
                     
-                    this.$emit('saved-add', true, this.status)
+                    this.email = "";
+                    this.password = "";
+
+                    this.showForm = false;
+
+                    this.$router.push("/");
+                    
+                    this.$emit('logged-in', true, this.loginResponse)
                 })
                 .catch(error => {
                     this.errorMessage = error.message;
                     console.error("There was an error!", error);
-                    this.$emit('saved-add', false, this.errorMessage)
+                    this.$emit('logged-in', false, this.errorMessage)
                 });
         }
     }

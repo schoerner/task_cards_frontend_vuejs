@@ -58,6 +58,7 @@
 
 <script>
 import axios from 'axios';
+import setAuthHeader from "@/utils/setAuthHeader.js";
 
 export default {
     data() {
@@ -90,9 +91,12 @@ export default {
                 creator: { id: this.newItemCreator }
             }
             // Example from https://medium.com/@pasb/how-to-test-cors-with-postman-local-or-domain-991acbb2c046
-            // async //const response = await axios.post("http://localhost:8088/rest/tasks", dataToSave)
+            // async //const response = await axios.post("/rest/tasks", dataToSave)
             //this.newItemId = response.data.id;
-            axios.post("http://localhost:8088/rest/tasks", dataToSave)
+
+          setAuthHeader(localStorage.getItem("jwtToken"));
+
+            axios.post("/api/tasks", dataToSave)
                 .then(response => {
                     this.newItemId = response.data.id
                     this.status = "The item was saved with id " + response.data.id

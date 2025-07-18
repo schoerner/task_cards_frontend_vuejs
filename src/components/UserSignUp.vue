@@ -90,7 +90,7 @@ export default {
             // Example from https://medium.com/@pasb/how-to-test-cors-with-postman-local-or-domain-991acbb2c046
             // async //const response = await axios.post("http://localhost:8088/rest/tasks", dataToSave)
             //this.newItemId = response.data.id;
-            axios.post("http://localhost:8088/auth/signup", newUser)
+            axios.post("/api/auth/signup", newUser)
                 .then(response => {
                     this.newItemId = response.data.id
                     this.status = "The user was saved with id " + response.data.id
@@ -104,6 +104,8 @@ export default {
                     this.showForm = false
                     
                     this.$emit('saved-add', true, this.status)
+
+                    this.$router.push("/login");
                 })
                 .catch(error => {
                     this.errorMessage = error.message;

@@ -22,6 +22,5 @@ const router = createRouter( {
 
 const app = createApp(App)
 app.use(router)
-
 app.component('task-cards', TaskCards)
 app.mount('#app')

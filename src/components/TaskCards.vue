@@ -48,6 +48,8 @@
 <script>
 
 import axios from 'axios';
+import setAuthHeader from "@/utils/setAuthHeader.js";
+
 //import TaskItem from './TaskItem.vue'
 import TaskCard from './TaskCard.vue';
 import AddTaskItem from './AddTaskItem.vue'
@@ -111,11 +113,8 @@ export default {
             this.fetchAllData()
         },
         async deleteItem(itemId) {
-            //const removed = this.items.filter(((item) => item.id !== itemId))
-            //this.items = removed
-
             // DELETE request using fetch with error handling
-            fetch('http://localhost:8088/rest/tasks/' + itemId, { method: 'DELETE' })
+            fetch('/api/tasks/' + itemId, { method: 'DELETE' })
                 .then(async response => {
                     // check for error response
                     if (!response.ok) {
@@ -134,13 +133,9 @@ export default {
                 });
         },
         fetchAllData() {
-            // asynch // const temp = await axios.get("http://localhost:8088/rest/tasks")
-            /*temp.forEach((item) => {
-              this.items.addItem(item.data)
-            })*/
-            // Quelle: https://jasonwatmore.com/post/2020/07/23/vue-axios-http-get-request-examples
-            // GET request using axios with error handling
-            axios.get("http://localhost:8088/rest/tasks")
+          setAuthHeader(localStorage.getItem("jwtToken"));
+
+            axios.get("/api/tasks")
                 .then(response => this.items = response.data)
                 .catch(error => {
                         this.errorMessage = "There was an error while loading the tasks: " + error.message;
