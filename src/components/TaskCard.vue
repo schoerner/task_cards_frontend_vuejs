@@ -4,9 +4,12 @@
       <div class="card-body">
         <h3 class="card-title">{{ task.title }}</h3>
         <p class="card-text">{{ task.description }}</p>
+        <!--
         <pre>ID: {{ task.id }}</pre>
         <pre>CreatorID: {{ task.creator }}</pre>
         <pre>TimeRecords: {{ task.timeRecords }}</pre>
+        <pre>Active: {{ task.active }}</pre>
+        -->
         <p>
           <button class="btn btn-primary" @click="editItem">Edit</button>
           <button v-show="!showSureToDeleteDialog" class="btn btn-danger" @click="areYouSureToDeleteItemDialog">Delete
@@ -24,7 +27,7 @@
 
 <script>
 
-import axios from 'axios';
+import TaskService from "@/services/task.service.js";
 
 export default {
   data() {
@@ -33,9 +36,16 @@ export default {
       isActive: false
     }
   },
+  mounted() {
+    this.isActive = this.task.active;
+    console.log("mounted.task", this.task);
+    console.log("mounted.task.active", this.task.active);
+    console.log("mounted.active", this.isActive);
+  },
+  created() {
+  },
   props: {
-    task: Object,
-    timeRecord: Object
+    task: Object
   },
   emits: [
     'edit-item',
@@ -44,32 +54,45 @@ export default {
   computed: {},
   methods: {
     startStop() {
-      console.group("startStop()");
       if (this.task.active) {
-        axios
-            .get("/api/tasks/stop/" + this.itemId)
-            .then((response) => {
-              console.log(response.status);
-              console.log(response.data);
-              this.task = response.data; // todo
-            })
-            .catch((e) => console.log('something went wrong :(', e));
+        TaskService.stopTask(this.task.id) // todo post task instead of task.id
+            .then(
+                (response) => {
+                  console.log(response.status);
+                  console.log(response.data);
+                  this.task.active = response.data.active; // todo
+                  this.isActive = this.task.active; // *wichtig: muss hier sein, da async - await
+                },
+                (error) => {
+                  this.errorMessage = "There was an error while fetching data: " +
+                      (error.response && error.response.data && error.response.data.message)
+                      || error.message
+                      || error.toString();
+                }
+            );
       } else {
-        axios
-            .get("/api/tasks/start/" + this.itemId)
-            .then(function (response) {
-              console.log(response.status);
-              console.log(response.data);
-              this.task = response.data; // todo
-            })
-            .catch(function (error) {
-              console.log(error);
-            });
+        TaskService.startTask(this.task.id) // todo post task instead of task.id
+            .then(
+                (response) => {
+                  console.log(response.status);
+                  console.log(response.data);
+                  this.task.active = response.data.active; // todo
+                  this.isActive = this.task.active;
+                },
+                (error) => {
+                  this.errorMessage = "There was an error while fetching data: " +
+                      (error.response && error.response.data && error.response.data.message)
+                      || error.message
+                      || error.toString();
+                }
+            );
       }
-      this.isActive = this.task.active;
+      // * context außerhalb await, wird nicht ausgeführt
+      console.log("startStop() after TaskService...")
     },
     editItem() {
-      this.$emit('edit-item', this.itemId)
+      console.log("TaskCard.editItem", this.task);
+      this.$emit('edit-item', this.task)
     },
     areYouSureToDeleteItemDialog() {
       this.showSureToDeleteDialog = true
@@ -78,7 +101,7 @@ export default {
       this.showSureToDeleteDialog = false
     },
     deleteItem() {
-      this.$emit('delete-item', this.itemId)
+      this.$emit('delete-item', this.task.id)
       this.showSureToDeleteDialog = false
     }
   }

@@ -1,102 +1,114 @@
 <template>
-    <div class="card shadow-sm">
-        <div class="card-body">
-            <div class="row">
-                <div class="col">
-                    <h3>Log in</h3>
-                </div>
-            </div>
-            <div class="container" v-if="status">
-                <div class="alert alert-success" role="alert">
-                    <h4 class="alert-heading">Success!</h4>
-                    <p>{{ status }}</p>
-                </div>
-            </div>
-            <div v-if="errorMessage" class="alert alert-danger d-flex align-items-center" role="alert">
-                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-exclamation-triangle" viewBox="0 0 16 16">
-                    <path d="M7.938 2.016A.13.13 0 0 1 8.002 2a.13.13 0 0 1 .063.016.15.15 0 0 1 .054.057l6.857 11.667c.036.06.035.124.002.183a.2.2 0 0 1-.054.06.1.1 0 0 1-.066.017H1.146a.1.1 0 0 1-.066-.017.2.2 0 0 1-.054-.06.18.18 0 0 1 .002-.183L7.884 2.073a.15.15 0 0 1 .054-.057m1.044-.45a1.13 1.13 0 0 0-1.96 0L.165 13.233c-.457.778.091 1.767.98 1.767h13.713c.889 0 1.438-.99.98-1.767z"/>
-                    <path d="M7.002 12a1 1 0 1 1 2 0 1 1 0 0 1-2 0M7.1 5.995a.905.905 0 1 1 1.8 0l-.35 3.507a.552.552 0 0 1-1.1 0z"/>
-                </svg>
-                <div>
-                    <p>{{ errorMessage }}</p>
-                </div>
-            </div>
-            <div class="row">
-                <form v-show="showForm" v-on:submit.prevent="logIn">
-                    <div class="row mb-3">
-                        <label for="email"  class="col-sm-2 col-form-label">Email: </label>
-                        <div class="col-sm-10">
-                            <input id="email" v-model="email" placeholder="user@test.org" ref="emailRef" required>
-                        </div>
-                    </div>
-                    <div class="row mb-3">
-                        <label for="password"  class="col-sm-2 col-form-label">Password: </label>
-                        <div class="col-sm-10">
-                            <input id="password" placeholder="****" type="password" class="form-control" v-model="password" />
-                        </div>
-                    </div>
-                    <button class="btn btn-primary" type="submit">Log in</button>
-                    <button class="btn btn-secondary" type="reset">Clear</button>
-                </form>
-            </div>
+  <div class="card shadow-sm">
+    <div class="card-body">
+      <div class="row">
+        <div class="col">
+          <h3>Log in</h3>
         </div>
+      </div>
+      <div v-if="message" class="alert alert-danger d-flex align-items-center" role="alert">
+        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor"
+             class="bi bi-exclamation-triangle" viewBox="0 0 16 16">
+          <path
+              d="M7.938 2.016A.13.13 0 0 1 8.002 2a.13.13 0 0 1 .063.016.15.15 0 0 1 .054.057l6.857 11.667c.036.06.035.124.002.183a.2.2 0 0 1-.054.06.1.1 0 0 1-.066.017H1.146a.1.1 0 0 1-.066-.017.2.2 0 0 1-.054-.06.18.18 0 0 1 .002-.183L7.884 2.073a.15.15 0 0 1 .054-.057m1.044-.45a1.13 1.13 0 0 0-1.96 0L.165 13.233c-.457.778.091 1.767.98 1.767h13.713c.889 0 1.438-.99.98-1.767z"/>
+          <path
+              d="M7.002 12a1 1 0 1 1 2 0 1 1 0 0 1-2 0M7.1 5.995a.905.905 0 1 1 1.8 0l-.35 3.507a.552.552 0 0 1-1.1 0z"/>
+        </svg>
+        <div>
+          <p>{{ message }}</p>
+        </div>
+      </div>
+      <div class="row">
+        <Form @submit="handleLogin" :validation-schema="schema">
+          <div class="form-group">
+            <label for="email">E-Mail</label>
+            <Field name="email" type="text" class="form-control"/>
+            <ErrorMessage name="email" class="error-feedback"/>
+          </div>
+          <div class="form-group">
+            <label for="password">Password</label>
+            <Field name="password" type="password" class="form-control"/>
+            <ErrorMessage name="password" class="error-feedback"/>
+          </div>
+
+          <div class="form-group">
+            <button class="btn btn-primary btn-block" :disabled="loading">
+                    <span
+                        v-show="loading"
+                        class="spinner-border spinner-border-sm"
+                    ></span>
+              <span>Login</span>
+            </button>
+          </div>
+
+          <div class="form-group">
+            <div v-if="message" class="alert alert-danger" role="alert">
+              {{ message }}
+            </div>
+          </div>
+        </Form>
+      </div>
     </div>
+  </div>
 </template>
 
 <script>
 // todo https://www.bezkoder.com/vue-3-authentication-jwt/#google_vignette
-import axios from 'axios';
-import setAuthHeader from "@/utils/setAuthHeader.js";
+
+import {Form, Field, ErrorMessage} from "vee-validate";
+import * as yup from "yup";
 
 export default {
-    data() {
-        return {
-            showForm: true,
-            email: "",
-            password: "",
-            loginResponse: "",
-            status: "",
-            errorMessage: ""
-        }
+  name: "UserLogin",
+  components: {
+    Form,
+    Field,
+    ErrorMessage,
+  },
+  data() {
+    const schema = yup.object().shape({
+      email: yup.string().required("E-Mail is required!"),
+      password: yup.string().required("Password is required!"),
+    });
+
+    return {
+      loading: false,
+      message: "",
+      schema,
+    };
+  },
+  computed: {
+    loggedIn() {
+      return this.$store.state.auth.status.loggedIn;
     },
-    methods: {
-        logIn() {
-            // todo: do some consistency checks here
-            const user = {
-                email: this.email,
-                password: this.password
-            }
-            setAuthHeader();
-
-            // Example from https://medium.com/@pasb/how-to-test-cors-with-postman-local-or-domain-991acbb2c046
-            // async //const response = await axios.post("/rest/tasks", dataToSave)
-            //this.newItemId = response.data.id;
-            axios.post("/api/auth/login", user)
-                .then(response => {
-                    console.log(response.data)
-                    this.loginResponse = response.data;
-                    localStorage.setItem("jwtToken", response.data.token);
-                    setAuthHeader(response.data.token);
-
-                    this.status = "You were successfully logged in."
-                    
-                    this.email = "";
-                    this.password = "";
-
-                    this.showForm = false;
-
-                    this.$router.push("/");
-                    
-                    this.$emit('logged-in', true, this.loginResponse)
-                })
-                .catch(error => {
-                    this.errorMessage = error.message;
-                    console.error("There was an error!", error);
-                    this.$emit('logged-in', false, this.errorMessage)
-                });
-        }
+  },
+  created() {
+    if (this.loggedIn) {
+      this.$router.push("/profile");
     }
-}
+  },
+  methods: {
+    handleLogin(user) {
+      this.loading = true;
+
+      this.$store.dispatch("auth/login", user)
+          .then(
+              () => {
+                this.$router.push("/profile");
+              },
+              (error) => {
+                this.loading = false;
+                this.message =
+                    (error.response &&
+                        error.response.data &&
+                        error.response.data.message) ||
+                    error.message ||
+                    error.toString();
+              }
+          );
+    },
+  },
+};
 </script>
 
 <style></style>

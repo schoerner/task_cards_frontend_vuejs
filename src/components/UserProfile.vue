@@ -1,6 +1,9 @@
-<script setup lang="ts">
+<script>
+import {jwtDecode} from "jwt-decode";
+
 export default {
-  name: 'UserProfile',
+  name: "UserProfile",
+  methods: {jwtDecode},
   computed: {
     currentUser() {
       return this.$store.state.auth.user;
@@ -16,18 +19,20 @@ export default {
 
 <template>
   <div class="container">
-    <header class="jumbotron">
-      <h3>
-        <strong>{{currentUser.username}}</strong> Profile
-      </h3>
-    </header>
+    <h3>
+      <strong>{{currentUser.username}}</strong>´s Profile
+    </h3>
     <p>
       <strong>Token:</strong>
-      {{currentUser.accessToken.substring(0, 20)}} ... {{currentUser.accessToken.substr(currentUser.accessToken.length - 20)}}
+      {{currentUser.token.substring(0, 20)}} ... {{currentUser.token.substring(currentUser.token.length - 20)}}
     </p>
     <p>
       <strong>Id:</strong>
       {{currentUser.id}}
+    </p>
+    <p>
+      <strong>Username:</strong>
+      {{currentUser.username}}
     </p>
     <p>
       <strong>Email:</strong>
@@ -40,6 +45,4 @@ export default {
   </div>
 </template>
 
-<style scoped>
-
-</style>
+<style></style>

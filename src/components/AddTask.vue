@@ -42,12 +42,6 @@
                         <textarea id="description" placeholder="Description" rows="4" cols="50" class="form-control" v-model="newItemDescription" />
                     </div>
                 </div>
-                <div class="row mb-3">
-                    <label for="creator_id"  class="col-sm-2 col-form-label">Creator: </label>
-                    <div class="col-sm-10">
-                        <input id="creator_id" type="number" v-model="newItemCreator">
-                    </div>
-                </div>
                 <button class="btn btn-primary" type="submit">Add</button>
                 <button class="btn btn-secondary" type="reset">Clear</button>
             </form>
@@ -57,8 +51,7 @@
 
 
 <script>
-import axios from 'axios';
-import setAuthHeader from "@/utils/setAuthHeader.js";
+import TaskService from "@/services/task.service.js";
 
 export default {
     data() {
@@ -79,24 +72,26 @@ export default {
         'saved-add',
         'cancelled-add'
     ],
+    computed: {
+      currentUser() {
+        return this.$store.state.auth.user;
+      }
+    },
     methods: {
         cancel() {
             this.$emit('cancelled-add')
         },
         addItem() {
             // todo: do some consistency checks here
-            const dataToSave = {
+            const newTask = {
                 title: this.newItemTitle,
                 description: this.newItemDescription,
-                creator: { id: this.newItemCreator }
+                creator: { id: this.currentUser.id }
             }
+            TaskService.
+                saveTask(newTask)
             // Example from https://medium.com/@pasb/how-to-test-cors-with-postman-local-or-domain-991acbb2c046
-            // async //const response = await axios.post("/rest/tasks", dataToSave)
-            //this.newItemId = response.data.id;
-
-          setAuthHeader(localStorage.getItem("jwtToken"));
-
-            axios.post("/api/tasks", dataToSave)
+            //axios.post("/api/tasks", newTask)
                 .then(response => {
                     this.newItemId = response.data.id
                     this.status = "The item was saved with id " + response.data.id

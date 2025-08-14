@@ -4,9 +4,8 @@
       <div class="d-lg-none" style="width: 2.25rem;"></div>
       <router-link to="/" class="navbar-brand">
         <img src="/img/test_logo.drawio.svg" alt="Logo acosci.de" class="d-inline-block align-text-top">
-        <span style="font-style: italic;">BS1 BT GmbH</span>
+        <span style="font-style: italic;">aCoSci.de</span>
       </router-link>
-      <!--<a class="navbar-brand" th:href="@{/}">-->
       <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarScroll"
         aria-controls="navbarScroll" aria-expanded="false" aria-label="Toggle navigation">
         <span class="navbar-toggler-icon"></span>
@@ -15,7 +14,6 @@
         <ul class="navbar-nav me-auto my-2 my-lg-0 navbar-nav-scroll" style="--bs-scroll-height: 100px;">
           <li class="nav-item">
             <router-link to="/tasks" class="nav-link">
-              <!--<a th:href="@{/}" class="nav-link">-->
               <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor"
                 class="bi bi-card-checklist" viewBox="0 0 16 16">
                 <path
@@ -34,12 +32,28 @@
                   </svg>
               </router-link>
           </li>
-          <li class="nav-item">
+
+          <li v-if="showAdminBoard" class="nav-item">
+            <router-link to="/admin" class="nav-link">Admin Board</router-link>
+          </li>
+          <li v-if="showModeratorBoard" class="nav-item">
+            <router-link to="/mod" class="nav-link">Moderator Board</router-link>
+          </li>
+
+          <li v-if="!currentUser" class="nav-item">
             <router-link to="/signup" class="nav-link">Sign up</router-link><br>
           </li>
-          <li class="nav-item">
+          <li v-if="!currentUser" class="nav-item">
             <router-link to="/login" class="nav-link">Log in</router-link><br>
           </li>
+
+          <li v-if="currentUser" class="nav-item">
+            <router-link to="/profile" class="nav-link">{{ currentUser.username }}´s Profile</router-link>
+          </li>
+          <li v-if="currentUser" class="nav-item">
+            <a class="nav-link" @click.prevent="logOut">Log out</a>
+          </li>
+
           <li class="nav-item">
             <router-link to="/about" class="nav-link">About</router-link><br>
           </li>
@@ -50,7 +64,7 @@
   <main id="content" class="container">
     <router-view></router-view>
   </main>
-  <footer th:fragment="footer" class="bd-footer py-4 py-md-5 mt-5 bg-body-tertiary">
+  <footer class="bd-footer py-4 py-md-5 mt-5 bg-body-tertiary">
     <div class="container py-4 py-md-5 px-4 px-md-3 text-body-secondary">
       <p>&copy; <i>Task App</i> by Gernot Schörner</p>
     </div>
@@ -60,15 +74,30 @@
 <script>
 
 export default {
-  data() {
-    return {
+  computed: {
+    currentUser() {
+      return this.$store.state.auth.user;
+    },
+    showAdminBoard() {
+      if (this.currentUser && this.currentUser['roles']) {
+        return this.currentUser['roles'].includes('ROLE_ADMIN');
+      }
+
+      return false;
+    },
+    showModeratorBoard() {
+      if (this.currentUser && this.currentUser['roles']) {
+        return this.currentUser['roles'].includes('ROLE_MODERATOR');
+      }
+
+      return false;
     }
   },
-  created() {
-  },
-  mounted() {
-  },
   methods: {
+    logOut() {
+      this.$store.dispatch("auth/logout");
+      this.$router.push('/login');
+    }
   }
 }
 </script>
@@ -85,3 +114,4 @@ export default {
   margin-bottom: 50px;
 }
 </style>
+// docker run --name mariadbtest -e MYSQL_ROOT_PASSWORD=Geheim01 -p 3306:3306 -d docker.io/library/mariadb:10.3
