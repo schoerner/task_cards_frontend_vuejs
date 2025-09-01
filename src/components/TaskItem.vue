@@ -71,7 +71,7 @@ export default {
             console.group("");
             console.log(timeRecord);
             axios
-                .put("http://localhost:8088/rest/time_records", timeRecord)
+                .put("http://localhost:8080/rest/time_records", timeRecord)
                 .then((response) => {
                     console.log(response.status);
                     console.log(response.data);
@@ -80,7 +80,7 @@ export default {
                 .catch((e) => console.log('something went wrong :(', e));
         }
         else {
-            axios.post("http://localhost:8088/rest/time_records", data.task )
+            axios.post("http://localhost:8080/rest/time_records", data.task )
                 .then(function (response) {
                     console.log(response);
                     setTimeRecord(response.data); // todo
