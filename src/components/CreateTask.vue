@@ -1,5 +1,7 @@
 <template>
   <div class="container">
+
+    <!-- Fehleranzeige -->
     <div v-if="errorMessage" class="alert alert-danger d-flex align-tasks-center" role="alert">
       <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor"
            class="bi bi-exclamation-triangle" viewBox="0 0 16 16">
@@ -12,13 +14,18 @@
         <p>{{ errorMessage }}</p>
       </div>
     </div>
-    <form v-on:submit.prevent="addItem">
+
+    <!-- Formular -->
+    <form v-on:submit.prevent="createTask">
+      <!-- Titel -->
       <div class="row mb-3">
         <label for="title" class="col-sm-2 col-form-label">Title: </label>
         <div class="col-sm-10">
           <input id="title" v-model="newTaskTitle" ref="newItemTitleRef" required>
         </div>
       </div>
+
+      <!-- Beschreibung -->
       <div class="row mb-3">
         <label for="description" class="col-sm-2 col-form-label">Description: </label>
         <div class="col-sm-10">
@@ -26,28 +33,73 @@
                     v-model="newTaskDescription"/>
         </div>
       </div>
+
+      <!-- Projekt Dropdown -->
+      <div class="row mb-3">
+        <label for="projectSelect" class="col-sm-2 col-form-label">Project:</label>
+        <div class="col-sm-10">
+          <select id="projectSelect" v-model="selectedProjectId" class="form-select">
+            <option disabled value="">-- Select project --</option>
+            <option v-for="project in projectOptions" :key="project.id" :value="project.id">
+              {{ project.name }}
+            </option>
+          </select>
+        </div>
+      </div>
+
+      <!-- Trigger: "Neues Projekt" -->
+      <button type="button" class="btn btn-outline-secondary" @click="showCreateProjectModal">+ New Project</button>
+
       <button class="btn btn-primary" type="submit">Add</button>
       <button class="btn btn-secondary" type="reset">Clear</button>
     </form>
+
+    <!-- Modal -->
+    <div class="modal fade" id="createProjectModal" tabindex="-1" aria-labelledby="createProjectModalLabel"
+         aria-hidden="true">
+      <div class="modal-dialog">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h5 class="modal-title" id="createProjectModalLabel">Create New Project</h5>
+            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"
+                    @click="hideCreateProjectModal"></button>
+          </div>
+          <div class="modal-body">
+            <CreateProject @created="projectCreated" @cancelled="hideCreateProjectModal"/>
+          </div>
+        </div>
+      </div>
+    </div>
   </div>
 </template>
 
 
 <script>
+import {Modal} from 'bootstrap';
 import TaskService from "@/services/task.service.js";
+import ProjectService from "@/services/project.service.js";
+import CreateProject from './CreateProject.vue';
 
 export default {
+  components: {
+    CreateProject
+  },
   data() {
     return {
       newTaskId: null,
       newTaskTitle: "",
       newTaskDescription: "",
       newTaskCreator: null,
-      errorMessage: ""
+      errorMessage: "",
+      createProjectModal: null,
+      projectOptions: [],
+      selectedProjectId: null
     }
   },
   mounted() {
-    this.$refs.newItemTitleRef.focus()
+    this.$refs.newItemTitleRef.focus();
+    this.createProjectModal = new Modal(document.getElementById('createProjectModal'));
+    this.loadProjects();
   },
   emits: [
     'saved-add',
@@ -59,21 +111,27 @@ export default {
     }
   },
   methods: {
-    addItem() {
+    createTask() {
       // todo: do some consistency checks here
       const newTask = {
         title: this.newTaskTitle,
         description: this.newTaskDescription,
-        creator: {id: this.currentUser.id}
+        creator: {id: this.currentUser.id},
+        project: {id: this.selectedProjectId}
       }
+
+      console.log("Creating task with project ID:", this.selectedProjectId);
+      console.log("Task object:", newTask);
+
       TaskService.saveTask(newTask)
           .then(response => {
-            this.newTaskId = response.data.id
+            this.newTaskId = response.data.id;
 
-            this.newTaskId = null
-            this.newTaskTitle = ""
-            this.newTaskDescription = ""
-            this.newTaskCreator = null
+            this.newTaskId = null;
+            this.newTaskTitle = "";
+            this.newTaskDescription = "";
+            this.newTaskCreator = null;
+            this.selectedProjectId = null;
 
             this.$emit('saved-add', true, "The task was saved with id " + response.data.id + ".")
           })
@@ -82,6 +140,21 @@ export default {
             console.error("There was an error!", error);
             this.$emit('saved-add', false, this.errorMessage)
           });
+    },
+    showCreateProjectModal() {
+      this.createProjectModal.show();
+    },
+    hideCreateProjectModal() {
+      this.createProjectModal.hide();
+    },
+    async loadProjects() {
+      const response = await ProjectService.getAllProjects();
+      this.projectOptions = response.data;
+    },
+    projectCreated(newProject) {
+      this.projectOptions.push(newProject);
+      this.selectedProjectId = newProject.id;
+      this.hideCreateProjectModal();
     }
   }
 }

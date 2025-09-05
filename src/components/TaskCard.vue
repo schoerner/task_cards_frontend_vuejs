@@ -4,12 +4,11 @@
       <div class="card-body">
         <h3 class="card-title">{{ task.title }}</h3>
         <p class="card-text">{{ task.description }}</p>
-        <!--
-        <pre>ID: {{ task.id }}</pre>
-        <pre>CreatorID: {{ task.creator }}</pre>
-        <pre>TimeRecords: {{ task.timeRecords }}</pre>
-        <pre>Active: {{ task.active }}</pre>
-        -->
+        <p class="card-text">
+          <span class="badge text-bg-info">
+            {{ task.project.name}}
+          </span>
+        </p>
         <p>
           <button class="btn btn-primary" @click.stop="editTask">Edit</button>
           <button class="btn btn-danger" @click.stop="deleteTask">Delete</button>

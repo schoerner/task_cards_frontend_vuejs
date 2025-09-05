@@ -27,15 +27,19 @@
                     v-model="editItemDescription" required></textarea>
         </div>
       </div>
+      <div class="row mb-3">
+        <div class="col-sm-2">Project:</div>
+        <div class="col-sm-10"><span class="badge text-bg-info">{{task.project.name}}</span></div>
+      </div>
 
       <div class="d-flex justify-content-between">
         <div>
-          <button class="btn btn-primary" type="submit">Speichern</button>
-          <button class="btn btn-secondary ms-2" type="reset">Zurücksetzen</button>
+          <button class="btn btn-primary" type="submit">Save</button>
+          <button class="btn btn-secondary ms-2" type="reset">Clear</button>
         </div>
         <div>
           <button type="button" class="btn btn-danger" @click="openDeleteModal">
-            Löschen
+            Delete
           </button>
         </div>
       </div>
@@ -46,16 +50,16 @@
       <div class="modal-dialog modal-dialog-centered">
         <div class="modal-content">
           <div class="modal-header bg-danger text-white">
-            <h5 class="modal-title">Aufgabe löschen?</h5>
+            <h5 class="modal-title">Delet Task?</h5>
             <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
           </div>
           <div class="modal-body">
-            <p>Möchtest du diese Aufgabe wirklich löschen?</p>
+            <p>Do you really want to delete the task?</p>
             <strong>{{ editItemTitle }}</strong>
           </div>
           <div class="modal-footer">
-            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Abbrechen</button>
-            <button type="button" class="btn btn-danger" @click="confirmDelete">Ja, löschen</button>
+            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+            <button type="button" class="btn btn-danger" @click="confirmDelete">Yes, delete</button>
           </div>
         </div>
       </div>
