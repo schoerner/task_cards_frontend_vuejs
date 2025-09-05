@@ -1,6 +1,6 @@
 import { createWebHistory, createRouter } from "vue-router";
 import TaskCards from "@/components/TaskCards.vue";
-import AddTask from "@/components/AddTask.vue";
+import CreateTask from "@/components/CreateTask.vue";
 import UserLogin from "@/components/UserLogin.vue";
 import UserSignUp from "@/components/UserSignUp.vue";
 import About from "@/components/About.vue";
@@ -13,7 +13,7 @@ const UserProfile = () => import("./components/UserProfile.vue")
 const routes = [
     { path: "/", component: TaskCards },
     { path: "/tasks", component: TaskCards },
-    { path: "/tasks/add", component: AddTask },
+    { path: "/tasks/add", component: CreateTask },
     { path: "/login", component: UserLogin },
     { path: "/signup", component: UserSignUp },
     { path: "/about", component: About },

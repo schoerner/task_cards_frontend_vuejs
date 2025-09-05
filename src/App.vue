@@ -12,7 +12,7 @@
       </button>
       <div class="collapse navbar-collapse" id="navbarScroll">
         <ul class="navbar-nav me-auto my-2 my-lg-0 navbar-nav-scroll" style="--bs-scroll-height: 100px;">
-          <li class="nav-item">
+          <li class="nav-task">
             <router-link to="/tasks" class="nav-link">
               <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor"
                 class="bi bi-card-checklist" viewBox="0 0 16 16">
@@ -24,7 +24,7 @@
               Tasks
             </router-link>
           </li>
-          <li class="nav-item">
+          <li class="nav-task">
             <router-link to="/tasks/add" class="nav-link">
                   <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-plus-square" viewBox="0 0 16 16">
                       <path d="M14 1a1 1 0 0 1 1 1v12a1 1 0 0 1-1 1H2a1 1 0 0 1-1-1V2a1 1 0 0 1 1-1zM2 0a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V2a2 2 0 0 0-2-2z"/>
@@ -33,28 +33,28 @@
               </router-link>
           </li>
 
-          <li v-if="showAdminBoard" class="nav-item">
+          <li v-if="showAdminBoard" class="nav-task">
             <router-link to="/admin" class="nav-link">Admin Board</router-link>
           </li>
-          <li v-if="showModeratorBoard" class="nav-item">
+          <li v-if="showModeratorBoard" class="nav-task">
             <router-link to="/mod" class="nav-link">Moderator Board</router-link>
           </li>
 
-          <li v-if="!currentUser" class="nav-item">
+          <li v-if="!currentUser" class="nav-task">
             <router-link to="/signup" class="nav-link">Sign up</router-link><br>
           </li>
-          <li v-if="!currentUser" class="nav-item">
+          <li v-if="!currentUser" class="nav-task">
             <router-link to="/login" class="nav-link">Log in</router-link><br>
           </li>
 
-          <li v-if="currentUser" class="nav-item">
+          <li v-if="currentUser" class="nav-task">
             <router-link to="/profile" class="nav-link">{{ currentUser.username }}´s Profile</router-link>
           </li>
-          <li v-if="currentUser" class="nav-item">
+          <li v-if="currentUser" class="nav-task">
             <a class="nav-link" @click.prevent="logOut">Log out</a>
           </li>
 
-          <li class="nav-item">
+          <li class="nav-task">
             <router-link to="/about" class="nav-link">About</router-link><br>
           </li>
         </ul>

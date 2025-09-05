@@ -6,7 +6,7 @@
         </p>
         <h2>Objectives</h2>
         <ol class="list-group list-group-numbered">
-            <li class="list-group-item d-flex justify-content-between align-items-start">
+            <li class="list-group-task d-flex justify-content-between align-tasks-start">
                 <div class="ms-2 me-auto">
                 <div class="fw-bold">Fast prototyping with HTML and CSS</div>
                 After having discussed UX, UD, Softwareergonomie, Barrierefreiheit and having done some mock-ups.
@@ -19,14 +19,14 @@
                 </div>
                 <span class="badge bg-primary rounded-pill">14</span>
             </li>
-            <li class="list-group-item d-flex justify-content-between align-items-start">
+            <li class="list-group-task d-flex justify-content-between align-tasks-start">
                 <div class="ms-2 me-auto">
                 <div class="fw-bold">Frontend development with VUE</div>
                 There's a great tutoral at <a href="https://www.w3schools.com/vue/index.php" target="_blank">https://www.w3schools.com/vue/index.php</a>
                 </div>
                 <span class="badge bg-primary rounded-pill">14</span>
             </li>
-            <li class="list-group-item d-flex justify-content-between align-items-start">
+            <li class="list-group-task d-flex justify-content-between align-tasks-start">
                 <div class="ms-2 me-auto">
                 <div class="fw-bold">ORM and REST by Spring Boot backend</div>
                 And the need of ...
@@ -40,8 +40,8 @@
         </ol>
         <h2>Other Topics</h2>
         <ol class="list-group list-group-numbered">
-            <li class="list-group-item">DTOs</li>
-            <li class="list-group-item">Spring Security</li>
+            <li class="list-group-task">DTOs</li>
+            <li class="list-group-task">Spring Security</li>
         </ol>
     </div>
 </template>

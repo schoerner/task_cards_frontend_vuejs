@@ -11,15 +11,9 @@
         <pre>Active: {{ task.active }}</pre>
         -->
         <p>
-          <button class="btn btn-primary" @click="editItem">Edit</button>
-          <button v-show="!showSureToDeleteDialog" class="btn btn-danger" @click="areYouSureToDeleteItemDialog">Delete
-          </button>
+          <button class="btn btn-primary" @click.stop="editTask">Edit</button>
+          <button class="btn btn-danger" @click.stop="deleteTask">Delete</button>
         </p>
-        <div v-show="showSureToDeleteDialog" class="alert alert-primary" role="alert">
-          <p>Do you really want to delete this item?</p>
-          <button class="btn btn-primary" @click="notSureToDeleteItem">No</button>
-          <button class="btn btn-danger" @click="deleteItem">Yes, delete!</button>
-        </div>
       </div>
     </div>
   </div>
@@ -32,7 +26,6 @@ import TaskService from "@/services/task.service.js";
 export default {
   data() {
     return {
-      showSureToDeleteDialog: false,
       isActive: false
     }
   },
@@ -48,8 +41,8 @@ export default {
     task: Object
   },
   emits: [
-    'edit-item',
-    'delete-item'
+    'edit-task',
+    'delete-task'
   ],
   computed: {},
   methods: {
@@ -90,19 +83,12 @@ export default {
       // * context außerhalb await, wird nicht ausgeführt
       console.log("startStop() after TaskService...")
     },
-    editItem() {
-      console.log("TaskCard.editItem", this.task);
-      this.$emit('edit-item', this.task)
+    editTask() {
+      console.log("TaskCard.editTask", this.task);
+      this.$emit('edit-task', this.task)
     },
-    areYouSureToDeleteItemDialog() {
-      this.showSureToDeleteDialog = true
-    },
-    notSureToDeleteItem() {
-      this.showSureToDeleteDialog = false
-    },
-    deleteItem() {
-      this.$emit('delete-item', this.task.id)
-      this.showSureToDeleteDialog = false
+    deleteTask() {
+      this.$emit('delete-task', this.task)
     }
   }
 };
