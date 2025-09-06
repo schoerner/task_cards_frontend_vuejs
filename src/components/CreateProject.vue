@@ -37,6 +37,7 @@ export default {
     async createProject() {
       const newProject = {
         name: this.projectName,
+        creator: {id: this.currentUser.id},
         users: [{id: this.currentUser.id}]
       }
 

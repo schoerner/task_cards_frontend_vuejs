@@ -38,7 +38,7 @@ export default {
       <strong>Email:</strong>
       {{currentUser.email}}
     </p>
-    <strong>Authorities:</strong>
+    <strong>Authorities (roles):</strong>
     <ul>
       <li v-for="role in currentUser.roles" :key="role">{{role}}</li>
     </ul>

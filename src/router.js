@@ -4,6 +4,9 @@ import CreateTask from "@/components/CreateTask.vue";
 import UserLogin from "@/components/UserLogin.vue";
 import UserSignUp from "@/components/UserSignUp.vue";
 import About from "@/components/About.vue";
+import Welcome from "@/components/Welcome.vue";
+import ProjectManager from "@/components/ProjectManager.vue";
+import CreateProject from "@/components/CreateProject.vue";
 // lazy-loaded
 const UserProfile = () => import("./components/UserProfile.vue")
 //const BoardAdmin = () => import("./components/BoardAdmin.vue")
@@ -11,9 +14,11 @@ const UserProfile = () => import("./components/UserProfile.vue")
 //const BoardUser = () => import("./components/BoardUser.vue")
 
 const routes = [
-    { path: "/", component: TaskCards },
+    { path: "/", component: Welcome },
     { path: "/tasks", component: TaskCards },
     { path: "/tasks/add", component: CreateTask },
+    { path: "/projects", component: ProjectManager },
+    { path: "/projects/create", component: CreateProject },
     { path: "/login", component: UserLogin },
     { path: "/signup", component: UserSignUp },
     { path: "/about", component: About },
@@ -51,7 +56,7 @@ const router = createRouter({
 });
 
 router.beforeEach((to, from, next) => {
-    const publicPages = ['/login', '/signup', '/about'];
+    const publicPages = ['/', '/login', '/signup', '/about'];
     const authRequired = !publicPages.includes(to.path);
     const loggedIn = localStorage.getItem('user');
 

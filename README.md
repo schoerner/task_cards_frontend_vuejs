@@ -1,29 +1,33 @@
-# vue_task
+# Task Card App - Frontend
 
-vue_task ist ein Test-Projekt zur didaktischen Analyse von Vue.js für den Unterricht.
+## Goals of this project
+- Didactical analysis of Vue.js to...
+    - Layers of a modern Web Architecture
+    - Reactive / declarative programming paradigm
+    - Services in JavaScript
+    - Authentication by JWT
+    - User role assignment
 
-This template should help get you started developing with Vue 3 in Vite.
+## Requirements
+- NPM and NVM
+- Docker to run docker compose with all services (see readme in the repository of the frontend)
 
-## Recommended IDE Setup
+## Initial Setup
 
-[VSCode](https://code.visualstudio.com/) + [Volar](https://marketplace.visualstudio.com/items?itemName=Vue.volar) (and disable Vetur).
+Create a .env file to set your credentials for your database connection and for initialization of the admin account.
+Change your admin password after your first log in.
 
-## Customize configuration
+```
+MYSQL_USER=schueler
+MYSQL_PASSWORD=Geheim01
+MYSQL_ROOT_PASSWORD=Geheim02
+APP_ADMIN_EMAIL=admin@example.com
+APP_ADMIN_PASSWORD=12345678
+```
 
-See [Vite Configuration Reference](https://vite.dev/config/).
-
-## Project Setup
-
-## under mac os: https://www.youtube.com/watch?v=S8ovFOnB4Sg
-
+If you run the scripts with powershell, you may have to execute the following command:
 ```sh
 Set-ExecutionPolicy -ExecutionPolicy Unrestricted -Scope Process
-npm init vue@latest
-npm install
-npm install axios
-npm install vue-router
-npm install bootstrap --save
-``` zerschossen npm install vue bootstrap bootstrap-vue --save
 ```
 
 ### Compile and Hot-Reload for Development
@@ -36,4 +40,12 @@ npm run dev
 
 ```sh
 npm run build
+```
+
+### Run the whole application
+
+You hav to clone the backend first.
+
+```sh
+docker-compose up
 ```

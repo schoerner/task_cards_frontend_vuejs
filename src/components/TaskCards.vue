@@ -198,7 +198,7 @@ export default {
         this.taskToDelete = null;
         this.getAllTasks();
       } catch (error) {
-        this.errorMessage = "Fehler beim Löschen: " + (
+        this.errorMessage = "Error while deleting the task: " + (
             error.response?.data?.message || error.message || error.toString()
         );
       } finally {
