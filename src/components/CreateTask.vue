@@ -38,17 +38,15 @@
       <div class="row mb-3">
         <label for="projectSelect" class="col-sm-2 col-form-label">Project:</label>
         <div class="col-sm-10">
-          <select id="projectSelect" v-model="selectedProjectId" class="form-select">
+          <select id="projectSelect" v-model="selectedProjectId" @change="handleProjectChange" class="form-select">
             <option disabled value="">-- Select project --</option>
             <option v-for="project in projectOptions" :key="project.id" :value="project.id">
               {{ project.name }}
             </option>
+            <option value="__new__">+ Create new project</option>
           </select>
         </div>
       </div>
-
-      <!-- Trigger: "Neues Projekt" -->
-      <button type="button" class="btn btn-outline-secondary" @click="showCreateProjectModal">+ New Project</button>
 
       <button class="btn btn-primary" type="submit">Add</button>
       <button class="btn btn-secondary" type="reset">Clear</button>
@@ -141,6 +139,11 @@ export default {
             this.$emit('saved-add', false, this.errorMessage)
           });
     },
+    handleProjectChange() {
+      if(this.selectedProjectId === "__new__"){
+        this.showCreateProjectModal();
+      }
+    },
     showCreateProjectModal() {
       this.createProjectModal.show();
     },
@@ -148,7 +151,7 @@ export default {
       this.createProjectModal.hide();
     },
     async loadProjects() {
-      const response = await ProjectService.getAllProjects();
+      const response = await ProjectService.getAllProjectsByUsersId(this.currentUser.id);
       this.projectOptions = response.data;
     },
     projectCreated(newProject) {

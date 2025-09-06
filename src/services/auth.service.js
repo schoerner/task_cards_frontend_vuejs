@@ -24,6 +24,7 @@ class AuthService {
                         id: userDetails.id,
                         username: userDetails.username,
                         email: userDetails.email,
+                        roles: userDetails.roles,
                         token: response.data.token,
                         expiresIn: response.data.expiresIn
                     };
