@@ -42,7 +42,7 @@ export default {
       }
 
       try {
-        const response = await ProjectService.saveProject(newProject);
+        const response = await ProjectService.createProject(newProject);
         this.$emit('created', response.data); // Gibt das neue Projekt an den Parent zurück
         this.projectName = '';
         this.errorMessage = '';

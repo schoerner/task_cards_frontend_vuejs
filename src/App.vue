@@ -13,7 +13,7 @@
       <div class="collapse navbar-collapse" id="navbarScroll">
         <ul class="navbar-nav me-auto my-2 my-lg-0 navbar-nav-scroll" style="--bs-scroll-height: 100px;">
 
-          <li v-if="showUserBoard" class="nav-task">
+          <li v-if="isUser" class="nav-task">
             <router-link to="/tasks" class="nav-link">
               <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-card-checklist" viewBox="0 0 16 16">
                 <path d="M14.5 3a.5.5 0 0 1 .5.5v9a.5.5 0 0 1-.5.5h-13a.5.5 0 0 1-.5-.5v-9a.5.5 0 0 1 .5-.5zm-13-1A1.5 1.5 0 0 0 0 3.5v9A1.5 1.5 0 0 0 1.5 14h13a1.5 1.5 0 0 0 1.5-1.5v-9A1.5 1.5 0 0 0 14.5 2z" />
@@ -23,7 +23,7 @@
             </router-link>
           </li>
 
-          <li v-if="showUserBoard" class="nav-task">
+          <li v-if="isUser" class="nav-task">
             <router-link to="/tasks/add" class="nav-link">
               <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-plus-square" viewBox="0 0 16 16">
                 <path d="M14 1a1 1 0 0 1 1 1v12a1 1 0 0 1-1 1H2a1 1 0 0 1-1-1V2a1 1 0 0 1 1-1zM2 0a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V2a2 2 0 0 0-2-2z"/>
@@ -32,11 +32,15 @@
             </router-link>
           </li>
 
-          <li v-if="showModeratorBoard" class="nav-task">
+          <li v-if="isUser" class="nav-task">
+            <router-link to="/projects/member" class="nav-link">Projects (member)</router-link>
+          </li>
+
+          <li v-if="isModerator" class="nav-task">
             <router-link to="/projects" class="nav-link">Projects</router-link>
           </li>
 
-          <li v-if="showModeratorBoard" class="nav-task">
+          <li v-if="isModerator" class="nav-task">
             <router-link to="/projects/create" class="nav-link">
               <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-plus-square" viewBox="0 0 16 16">
                 <path d="M14 1a1 1 0 0 1 1 1v12a1 1 0 0 1-1 1H2a1 1 0 0 1-1-1V2a1 1 0 0 1 1-1zM2 0a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V2a2 2 0 0 0-2-2z"/>
@@ -83,19 +87,19 @@ export default {
     currentUser() {
       return this.$store.state.auth.user;
     },
-    showUserBoard() {
+    isUser() {
       if (this.currentUser && this.currentUser['roles']) {
         return this.currentUser['roles'].includes('ROLE_USER');
       }
       return false;
     },
-    showModeratorBoard() {
+    isModerator() {
       if (this.currentUser && this.currentUser['roles']) {
         return this.currentUser['roles'].includes('ROLE_MODERATOR');
       }
       return false;
     },
-    showAdminBoard() {
+    isAdmin() {
       if (this.currentUser && this.currentUser['roles']) {
         return this.currentUser['roles'].includes('ROLE_ADMIN');
       }

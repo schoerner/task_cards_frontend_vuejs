@@ -5,8 +5,9 @@ import UserLogin from "@/components/UserLogin.vue";
 import UserSignUp from "@/components/UserSignUp.vue";
 import About from "@/components/About.vue";
 import Welcome from "@/components/Welcome.vue";
-import ProjectManager from "@/components/ProjectManager.vue";
+import MyOwnedProjectManager from "@/components/MyOwnedProjectManager.vue";
 import CreateProject from "@/components/CreateProject.vue";
+import ProjectMemberOverview from "@/components/ProjectMemberOverview.vue";
 // lazy-loaded
 const UserProfile = () => import("./components/UserProfile.vue")
 //const BoardAdmin = () => import("./components/BoardAdmin.vue")
@@ -17,7 +18,8 @@ const routes = [
     { path: "/", component: Welcome },
     { path: "/tasks", component: TaskCards },
     { path: "/tasks/add", component: CreateTask },
-    { path: "/projects", component: ProjectManager },
+    { path: "/projects/member", component: ProjectMemberOverview },
+    { path: "/projects", component: MyOwnedProjectManager },
     { path: "/projects/create", component: CreateProject },
     { path: "/login", component: UserLogin },
     { path: "/signup", component: UserSignUp },

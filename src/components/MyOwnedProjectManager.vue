@@ -131,7 +131,7 @@ export default {
     },
     loadProjects() {
       ProjectService
-          .getAllProjectsByCreatorId(this.currentUser.id)
+          .getMyOwnedProjects(this.currentUser.id)
           .then(
               (response) => {
                 this.projects = response.data

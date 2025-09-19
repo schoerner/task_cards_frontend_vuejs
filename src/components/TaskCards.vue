@@ -133,11 +133,6 @@ export default {
       errorMessage: ""
     };
   },
-  computed: {
-    currentUser() {
-      return this.$store.state.auth.user;
-    }
-  },
   mounted() {
     this.getAllTasks();
   },
@@ -212,7 +207,7 @@ export default {
     },
     getAllTasks() {
       TaskService
-          .getAllTasksByUserId(this.currentUser.id)
+          .getMyTasks()
           .then(
               // Version with callback function
               this.setTasksByResponse
