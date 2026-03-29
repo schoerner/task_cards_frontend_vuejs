@@ -23,7 +23,11 @@ MYSQL_PASSWORD=Geheim01
 MYSQL_ROOT_PASSWORD=Geheim02
 APP_ADMIN_EMAIL=admin@example.com
 APP_ADMIN_PASSWORD=12345678
+VITE_API_URL=/api
 ```
+Consider that MYSQL_ and APP_ variables belong to the backend and VITE_ to the frontend.
+
+If VITE_API_URL is not set, the app falls back to: http://localhost:8080
 
 If you run the scripts with powershell, you may have to execute the following command:
 ```sh

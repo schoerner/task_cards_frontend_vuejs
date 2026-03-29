@@ -1,8 +1,6 @@
-
 class TaskAppConfig {
     static baseUrl() {
-        const docker = true;
-        return docker ? "" : "http://localhost:8080";
+        return import.meta.env.VITE_API_URL || "http://localhost:8080";
     }
 }
 

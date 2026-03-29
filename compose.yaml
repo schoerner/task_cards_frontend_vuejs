@@ -21,7 +21,7 @@ services:
       - task_network
   backend:
     build:
-      context: "../../spring_tasks"
+      context: "../task_cards_backend_spring"
       dockerfile: Dockerfile
     container_name: tasks-backend
     environment:

@@ -1,5 +1,5 @@
 # Verwende ein leichtgewichtiges Node.js-Image auf Alpine-Basis für den Build
-FROM node:22-alpine AS build-stage
+FROM node:22.22.2-alpine AS build-stage
 
 # Setzt das Arbeitsverzeichnis im Container
 WORKDIR /app
@@ -15,13 +15,16 @@ RUN npm install
 COPY . .
 
 # Wähle explizit die .env-Datei für die Build-Umgebung, z.B. für Produktion:
-COPY .env.vue_production .env
+#COPY .env.vue_production .env
+
+ARG VITE_API_URL=/api
+ENV VITE_API_URL=$VITE_API_URL
 
 # Baut die Vue.js-Anwendung im Produktionsmodus (Ausgabe im /dist-Ordner)
 RUN npm run build
 
 # Verwende ein schlankes Nginx-Image für die Auslieferung der gebauten App
-FROM nginx:stable-alpine AS production-stage
+FROM nginx:1.28.3-alpine3.23 AS production-stage
 
 # Kopiert die gebaute Anwendung aus der Build-Stage in das Standard-Verzeichnis von Nginx
 COPY --from=build-stage /app/dist /usr/share/nginx/html
