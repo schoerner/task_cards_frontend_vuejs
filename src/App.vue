@@ -3,7 +3,7 @@
     <nav class="container-xxl bd-gutter flex-wrap flex-lg-nowrap" aria-label="Main navigation">
       <div class="d-lg-none" style="width: 2.25rem;"></div>
       <router-link to="/" class="navbar-brand">
-        <img src="/img/test_logo.drawio.svg" alt="Logo acosci.de" class="d-inline-block align-text-top">
+        <img src="/img/test_logo.drawio.svg" alt="Logo task.acosci.de" class="d-inline-block align-text-top">
         <span style="font-style: italic;">Task Cards</span>
       </router-link>
       <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarScroll"
@@ -49,7 +49,7 @@
             </router-link>
           </li>
 
-          <li v-if="!currentUser" class="nav-task">
+          <li v-if="isAdmin" class="nav-task">
             <router-link to="/signup" class="nav-link">Sign up</router-link><br>
           </li>
           <li v-if="!currentUser" class="nav-task">
