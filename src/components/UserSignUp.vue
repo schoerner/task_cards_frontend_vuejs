@@ -115,9 +115,30 @@ export default {
     loggedIn() {
       return this.$store.state.auth.status.loggedIn;
     },
+    currentUser() {
+      return this.$store.state.auth.user;
+    },
+    isUser() {
+      if (this.currentUser && this.currentUser['roles']) {
+        return this.currentUser['roles'].includes('ROLE_USER');
+      }
+      return false;
+    },
+    isModerator() {
+      if (this.currentUser && this.currentUser['roles']) {
+        return this.currentUser['roles'].includes('ROLE_MODERATOR');
+      }
+      return false;
+    },
+    isAdmin() {
+      if (this.currentUser && this.currentUser['roles']) {
+        return this.currentUser['roles'].includes('ROLE_ADMIN');
+      }
+      return false;
+    }
   },
   mounted() {
-    if (this.loggedIn) {
+    if (this.loggedIn && !this.isAdmin()) {
       this.$router.push("/profile");
     }
   },

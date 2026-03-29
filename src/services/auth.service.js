@@ -2,7 +2,7 @@ import axios from 'axios';
 import TaskAppConfig from "@/task_app.config.js";
 import {jwtDecode} from "jwt-decode";
 
-const API_URL = TaskAppConfig.baseUrl() + '/api/v1/auth';
+const API_URL = TaskAppConfig.baseUrl() + '/auth';
 
 class AuthService {
     login(user) {
