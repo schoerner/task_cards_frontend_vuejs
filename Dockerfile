@@ -17,7 +17,7 @@ COPY . .
 # Wähle explizit die .env-Datei für die Build-Umgebung, z.B. für Produktion:
 #COPY .env.vue_production .env
 
-ARG VITE_API_URL=/api
+ARG VITE_API_URL=/api/v1
 ENV VITE_API_URL=$VITE_API_URL
 
 # Baut die Vue.js-Anwendung im Produktionsmodus (Ausgabe im /dist-Ordner)
