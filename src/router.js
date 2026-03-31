@@ -4,6 +4,7 @@ import CreateTask from "@/components/CreateTask.vue";
 import UserLogin from "@/components/UserLogin.vue";
 import UserSignUp from "@/components/UserSignUp.vue";
 import About from "@/components/About.vue";
+import Impressum from "@/components/Impressum.vue";
 import Welcome from "@/components/Welcome.vue";
 import MyOwnedProjectManager from "@/components/MyOwnedProjectManager.vue";
 import CreateProject from "@/components/CreateProject.vue";
@@ -24,6 +25,7 @@ const routes = [
     { path: "/login", component: UserLogin },
     { path: "/signup", component: UserSignUp },
     { path: "/about", component: About },
+    { path: "/impressum", component: Impressum },
     {
         path: "/profile",
         name: "UserProfile",
@@ -58,7 +60,7 @@ const router = createRouter({
 });
 
 router.beforeEach((to, from, next) => {
-    const publicPages = ['/', '/login', '/about'];
+    const publicPages = ['/', '/login', '/about', '/impressum'];
     const authRequired = !publicPages.includes(to.path);
     const loggedIn = localStorage.getItem('user');
 

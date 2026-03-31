@@ -1,6 +1,6 @@
 <template>
   <div v-if="currentUser">
-    <h1>Welcome to the Task Cards App, <strong>{{currentUser.username}}</strong></h1>
+    <h1>Welcome to the <i>ACoSci Tasks App</i>, <strong>{{currentUser.username}}</strong></h1>
     <h2>You have been registered.</h2>
     <p>That's a good sign.</p>
     <h2>You are able to ...</h2>
@@ -23,10 +23,10 @@
     </ul>
   </div>
   <div v-if="!currentUser">
-    <h1>Welcome to the Task Cards App></h1>
-    <div class="alert alert-info" role="alert">
-      Sign up and log in to the Task Cards App.
-    </div>
+    <h1>Welcome to the <i>ACoSci Tasks App</i></h1>
+    <p class="alert alert-info" role="alert">
+      Log in to the <i>ACoSci Tasks App</i>.
+    </p>
   </div>
 </template>
 

@@ -1,4 +1,4 @@
-# Task Card App - Frontend
+# ACoSci Tasks - Frontend
 
 ## Goals of this project
 - Didactical analysis of Vue.js to...
