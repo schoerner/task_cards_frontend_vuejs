@@ -1,4 +1,6 @@
 import { createWebHistory, createRouter } from "vue-router";
+import store from "@/store";
+
 import TaskCards from "@/components/TaskCards.vue";
 import CreateTask from "@/components/CreateTask.vue";
 import UserLogin from "@/components/UserLogin.vue";
@@ -9,49 +11,23 @@ import Welcome from "@/components/Welcome.vue";
 import MyOwnedProjectManager from "@/components/MyOwnedProjectManager.vue";
 import CreateProject from "@/components/CreateProject.vue";
 import ProjectMemberOverview from "@/components/ProjectMemberOverview.vue";
-// lazy-loaded
-const UserProfile = () => import("./components/UserProfile.vue")
-//const BoardAdmin = () => import("./components/BoardAdmin.vue")
-//const BoardModerator = () => import("./components/BoardModerator.vue")
-//const BoardUser = () => import("./components/BoardUser.vue")
+import UserManagement from "@/components/UserManagement.vue";
+
+const UserProfile = () => import("./components/UserProfile.vue");
 
 const routes = [
     { path: "/", component: Welcome },
-    { path: "/tasks", component: TaskCards },
-    { path: "/tasks/add", component: CreateTask },
-    { path: "/projects/member", component: ProjectMemberOverview },
-    { path: "/projects", component: MyOwnedProjectManager },
-    { path: "/projects/create", component: CreateProject },
+    { path: "/tasks", component: TaskCards, meta: { requiresAuth: true } },
+    { path: "/tasks/add", component: CreateTask, meta: { requiresAuth: true } },
+    { path: "/projects/member", component: ProjectMemberOverview, meta: { requiresAuth: true } },
+    { path: "/projects", component: MyOwnedProjectManager, meta: { requiresAuth: true } },
+    { path: "/projects/create", component: CreateProject, meta: { requiresAuth: true } },
     { path: "/login", component: UserLogin },
-    { path: "/signup", component: UserSignUp },
+    { path: "/signup", component: UserSignUp, meta: { requiresAdmin: true } },
     { path: "/about", component: About },
     { path: "/impressum", component: Impressum },
-    {
-        path: "/profile",
-        name: "UserProfile",
-        // lazy-loaded
-        component: UserProfile,
-    },
-    /*
-    {
-        path: "/admin",
-        name: "admin",
-        // lazy-loaded
-        component: BoardAdmin,
-    },
-    {
-        path: "/mod",
-        name: "moderator",
-        // lazy-loaded
-        component: BoardModerator,
-    },
-    {
-        path: "/user",
-        name: "user",
-        // lazy-loaded
-        component: BoardUser,
-    },
-    */
+    { path: "/profile", name: "UserProfile", component: UserProfile, meta: { requiresAuth: true } },
+    { path: "/user-management", component: UserManagement, meta: { requiresAdmin: true } },
 ];
 
 const router = createRouter({
@@ -60,17 +36,29 @@ const router = createRouter({
 });
 
 router.beforeEach((to, from, next) => {
-    const publicPages = ['/', '/login', '/about', '/impressum'];
-    const authRequired = !publicPages.includes(to.path);
-    const loggedIn = localStorage.getItem('user');
+    const loggedIn = store.getters["auth/loggedIn"];
+    const isAdmin = store.getters["auth/isAdmin"];
 
-    // trying to access a restricted page + not logged in
-    // redirect to login page
-    if (authRequired && !loggedIn) {
-        next('/login');
-    } else {
-        next();
+    if (to.meta.requiresAdmin) {
+        if (!loggedIn) {
+            next("/login");
+            return;
+        }
+
+        if (!isAdmin) {
+            next("/tasks");
+            return;
+        }
     }
+
+    if (to.meta.requiresAuth) {
+        if (!loggedIn) {
+            next("/login");
+            return;
+        }
+    }
+
+    next();
 });
 
 export default router;

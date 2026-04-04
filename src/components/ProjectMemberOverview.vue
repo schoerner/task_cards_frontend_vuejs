@@ -40,7 +40,7 @@ export default {
   },
   computed: {
     currentUser() {
-      return this.$store.state.auth.user;
+      return this.$store.getters["auth/currentUser"];
     },
     sortedProjects() {
       return [...this.projects].sort((a, b) => {

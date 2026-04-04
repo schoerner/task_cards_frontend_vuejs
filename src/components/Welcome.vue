@@ -7,18 +7,18 @@
     <ul>
       <li>
         See this welcome page.
-        <span v-if="showWelcomeBoard" class="badge text-bg-success">Yes</span>
-        <span v-if="!showWelcomeBoard" class="badge text-bg-danger">No</span>
+        <span v-if="isUser" class="badge text-bg-success">Yes</span>
+        <span v-if="!isUser" class="badge text-bg-danger">No</span>
       </li>
       <li>
         Manage tasks and projects.
-        <span v-if="showModeratorBoard" class="badge text-bg-success">Yes</span>
-        <span v-if="!showModeratorBoard" class="badge text-bg-danger">No</span>
+        <span v-if="isModerator" class="badge text-bg-success">Yes</span>
+        <span v-if="!isModerator" class="badge text-bg-danger">No</span>
       </li>
       <li>
         Manage users.
-        <span v-if="showAdminBoard" class="badge text-bg-success">Yes</span>
-        <span v-if="!showAdminBoard" class="badge text-bg-danger">No</span>
+        <span v-if="isAdmin" class="badge text-bg-success">Yes</span>
+        <span v-if="!isAdmin" class="badge text-bg-danger">No</span>
       </li>
     </ul>
   </div>
@@ -35,25 +35,16 @@
 export default {
   computed: {
     currentUser() {
-      return this.$store.state.auth.user;
+      return this.$store.getters["auth/currentUser"];
     },
-    showWelcomeBoard() {
-      if (this.currentUser && this.currentUser['roles']) {
-        return this.currentUser['roles'].includes('ROLE_USER');
-      }
-      return false;
+    isUser() {
+      return this.$store.getters["auth/isUser"];
     },
-    showAdminBoard() {
-      if (this.currentUser && this.currentUser['roles']) {
-        return this.currentUser['roles'].includes('ROLE_ADMIN');
-      }
-      return false;
+    isModerator() {
+      return this.$store.getters["auth/isModerator"];
     },
-    showModeratorBoard() {
-      if (this.currentUser && this.currentUser['roles']) {
-        return this.currentUser['roles'].includes('ROLE_MODERATOR');
-      }
-      return false;
+    isAdmin() {
+      return this.$store.getters["auth/isAdmin"];
     }
   }
 }

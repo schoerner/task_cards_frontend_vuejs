@@ -30,7 +30,7 @@ export default {
   emits: ['created', 'cancelled'],
   computed: {
     currentUser() {
-      return this.$store.state.auth.user;
+      return this.$store.getters["auth/currentUser"];
     }
   },
   methods: {

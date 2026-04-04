@@ -113,32 +113,23 @@ export default {
   },
   computed: {
     loggedIn() {
-      return this.$store.state.auth.status.loggedIn;
+      return this.$store.getters["auth/loggedIn"];
     },
     currentUser() {
-      return this.$store.state.auth.user;
+      return this.$store.getters["auth/currentUser"];
     },
     isUser() {
-      if (this.currentUser && this.currentUser['roles']) {
-        return this.currentUser['roles'].includes('ROLE_USER');
-      }
-      return false;
+      return this.$store.getters["auth/isUser"];
     },
     isModerator() {
-      if (this.currentUser && this.currentUser['roles']) {
-        return this.currentUser['roles'].includes('ROLE_MODERATOR');
-      }
-      return false;
+      return this.$store.getters["auth/isModerator"];
     },
     isAdmin() {
-      if (this.currentUser && this.currentUser['roles']) {
-        return this.currentUser['roles'].includes('ROLE_ADMIN');
-      }
-      return false;
+      return this.$store.getters["auth/isAdmin"];
     }
   },
   mounted() {
-    if (this.loggedIn && !this.isAdmin()) {
+    if (this.loggedIn && !this.isAdmin) {
       this.$router.push("/profile");
     }
   },

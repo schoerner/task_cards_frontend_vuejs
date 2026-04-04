@@ -8,6 +8,37 @@ const initialState = user
 export const auth = {
     namespaced: true,
     state: initialState,
+
+    getters: {
+        loggedIn(state) {
+            return state.status.loggedIn;
+        },
+        currentUser(state) {
+            return state.user;
+        },
+        roles(state) {
+            if (!state.user || !state.user.roles) {
+                return [];
+            }
+
+            return state.user.roles.map(role => {
+                if (typeof role === 'string') {
+                    return role;
+                }
+                return role.name;
+            }).filter(Boolean);
+        },
+        isUser(state, getters) {
+            return getters.roles.includes('ROLE_USER');
+        },
+        isModerator(state, getters) {
+            return getters.roles.includes('ROLE_MODERATOR');
+        },
+        isAdmin(state, getters) {
+            return getters.roles.includes('ROLE_ADMIN');
+        }
+    },
+
     actions: {
         login({ commit }, user) {
             return AuthService.login(user).then(
@@ -26,21 +57,19 @@ export const auth = {
             commit('logout');
         },
         register({ commit }, user) {
-            console.log("auth.module.js -> register", user);
             return AuthService.register(user).then(
                 response => {
-                    console.log("registerSuccess",);
                     commit('registerSuccess');
                     return Promise.resolve(response.data);
                 },
                 error => {
-                    console.log("registerFailure",);
                     commit('registerFailure');
                     return Promise.reject(error);
                 }
             );
         }
     },
+
     mutations: {
         loginSuccess(state, user) {
             state.status.loggedIn = true;

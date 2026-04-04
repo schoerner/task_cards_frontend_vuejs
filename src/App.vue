@@ -52,6 +52,9 @@
             <li v-if="isAdmin" class="nav-task">
               <router-link to="/signup" class="nav-link">Sign up</router-link>
             </li>
+            <li v-if="isAdmin" class="nav-item">
+              <router-link to="/user-management" class="nav-link">User Management</router-link>
+            </li>
             <li v-if="!currentUser" class="nav-task">
               <router-link to="/login" class="nav-link">Log in</router-link>
             </li>
@@ -85,26 +88,20 @@
 
 export default {
   computed: {
+    loggedIn() {
+      return this.$store.getters["auth/loggedIn"];
+    },
     currentUser() {
-      return this.$store.state.auth.user;
+      return this.$store.getters["auth/currentUser"];
     },
     isUser() {
-      if (this.currentUser && this.currentUser['roles']) {
-        return this.currentUser['roles'].includes('ROLE_USER');
-      }
-      return false;
+      return this.$store.getters["auth/isUser"];
     },
     isModerator() {
-      if (this.currentUser && this.currentUser['roles']) {
-        return this.currentUser['roles'].includes('ROLE_MODERATOR');
-      }
-      return false;
+      return this.$store.getters["auth/isModerator"];
     },
     isAdmin() {
-      if (this.currentUser && this.currentUser['roles']) {
-        return this.currentUser['roles'].includes('ROLE_ADMIN');
-      }
-      return false;
+      return this.$store.getters["auth/isAdmin"];
     }
   },
   methods: {
@@ -117,7 +114,7 @@ export default {
 </script>
 
 <style>
-html, body, #app {
+html, body {
   height: 100%;
   margin: 0;
 }
