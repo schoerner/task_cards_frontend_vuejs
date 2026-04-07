@@ -1,167 +1,248 @@
 <template>
-  <div class="container">
-
-    <!-- Fehleranzeige -->
-    <div v-if="errorMessage" class="alert alert-danger d-flex align-tasks-center" role="alert">
-      <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor"
-           class="bi bi-exclamation-triangle" viewBox="0 0 16 16">
-        <path
-            d="M7.938 2.016A.13.13 0 0 1 8.002 2a.13.13 0 0 1 .063.016.15.15 0 0 1 .054.057l6.857 11.667c.036.06.035.124.002.183a.2.2 0 0 1-.054.06.1.1 0 0 1-.066.017H1.146a.1.1 0 0 1-.066-.017.2.2 0 0 1-.054-.06.18.18 0 0 1 .002-.183L7.884 2.073a.15.15 0 0 1 .054-.057m1.044-.45a1.13 1.13 0 0 0-1.96 0L.165 13.233c-.457.778.091 1.767.98 1.767h13.713c.889 0 1.438-.99.98-1.767z"/>
-        <path
-            d="M7.002 12a1 1 0 1 1 2 0 1 1 0 0 1-2 0M7.1 5.995a.905.905 0 1 1 1.8 0l-.35 3.507a.552.552 0 0 1-1.1 0z"/>
-      </svg>
-      <div>
-        <p>{{ errorMessage }}</p>
-      </div>
+  <div class="container py-4">
+    <div class="mb-4">
+      <h2 class="mb-1">Task anlegen</h2>
+      <p class="text-muted mb-0">Neue projektbezogene Task nach dem neuen Backend-Modell anlegen.</p>
     </div>
 
-    <!-- Formular -->
-    <form v-on:submit.prevent="createTask">
-      <!-- Titel -->
-      <div class="row mb-3">
-        <label for="title" class="col-sm-2 col-form-label">Title: </label>
-        <div class="col-sm-10">
-          <input id="title" v-model="newTaskTitle" ref="newItemTitleRef" required>
+    <div v-if="successMessage" class="alert alert-success" role="alert">
+      {{ successMessage }}
+    </div>
+
+    <div v-if="errorMessage" class="alert alert-danger" role="alert">
+      {{ errorMessage }}
+    </div>
+
+    <form @submit.prevent="createTask" class="card shadow-sm">
+      <div class="card-body">
+        <div class="row g-3">
+          <div class="col-12">
+            <label for="title" class="form-label">Titel</label>
+            <input
+                id="title"
+                ref="newItemTitleRef"
+                v-model.trim="form.title"
+                type="text"
+                class="form-control"
+                maxlength="255"
+                required
+            >
+          </div>
+
+          <div class="col-12">
+            <label for="description" class="form-label">Beschreibung</label>
+            <textarea
+                id="description"
+                v-model.trim="form.description"
+                rows="4"
+                maxlength="20000"
+                class="form-control"
+            ></textarea>
+          </div>
+
+          <div class="col-md-6">
+            <label for="projectSelect" class="form-label">Projekt</label>
+            <select
+                id="projectSelect"
+                v-model="form.projectId"
+                class="form-select"
+                required
+                @change="loadBoardColumns"
+            >
+              <option :value="null" disabled>-- Projekt auswählen --</option>
+              <option v-for="project in activeProjects" :key="project.id" :value="project.id">
+                {{ project.name }}
+              </option>
+            </select>
+          </div>
+
+          <div class="col-md-6">
+            <label for="boardColumnSelect" class="form-label">Spalte</label>
+            <select
+                id="boardColumnSelect"
+                v-model="form.boardColumnId"
+                class="form-select"
+            >
+              <option :value="null">Automatisch / Standardspalte</option>
+              <option v-for="column in sortedBoardColumns" :key="column.id" :value="column.id">
+                {{ column.name }}
+              </option>
+            </select>
+          </div>
+
+          <div class="col-md-4">
+            <label for="priority" class="form-label">Priorität</label>
+            <select id="priority" v-model="form.priority" class="form-select">
+              <option value="LOW">LOW</option>
+              <option value="MEDIUM">MEDIUM</option>
+              <option value="HIGH">HIGH</option>
+              <option value="URGENT">URGENT</option>
+            </select>
+          </div>
+
+          <div class="col-md-4">
+            <label for="dueDate" class="form-label">Fällig bis</label>
+            <input
+                id="dueDate"
+                v-model="form.dueDate"
+                type="datetime-local"
+                class="form-control"
+            >
+          </div>
+
+          <div class="col-md-4">
+            <label for="estimatedMinutes" class="form-label">Schätzung (Min.)</label>
+            <input
+                id="estimatedMinutes"
+                v-model.number="form.estimatedMinutes"
+                type="number"
+                min="0"
+                class="form-control"
+            >
+          </div>
         </div>
       </div>
 
-      <!-- Beschreibung -->
-      <div class="row mb-3">
-        <label for="description" class="col-sm-2 col-form-label">Description: </label>
-        <div class="col-sm-10">
-          <textarea id="description" placeholder="Description" rows="4" cols="50" class="form-control"
-                    v-model="newTaskDescription"/>
-        </div>
+      <div class="card-footer d-flex gap-2">
+        <button class="btn btn-primary" type="submit" :disabled="saving">
+          {{ saving ? 'Speichert...' : 'Task anlegen' }}
+        </button>
+        <button class="btn btn-secondary" type="button" @click="resetForm">
+          Zurücksetzen
+        </button>
       </div>
-
-      <!-- Projekt Dropdown -->
-      <div class="row mb-3">
-        <label for="projectSelect" class="col-sm-2 col-form-label">Project:</label>
-        <div class="col-sm-10">
-          <select id="projectSelect" v-model="selectedProjectId" @change="handleProjectChange" class="form-select">
-            <option disabled value="">-- Select project --</option>
-            <option v-for="project in projectOptions" :key="project.id" :value="project.id">
-              {{ project.name }}
-            </option>
-            <option value="__new__">+ Create new project</option>
-          </select>
-        </div>
-      </div>
-
-      <button class="btn btn-primary" type="submit">Add</button>
-      <button class="btn btn-secondary" type="reset">Clear</button>
     </form>
-
-    <!-- Modal -->
-    <div class="modal fade" id="createProjectModal" tabindex="-1" aria-labelledby="createProjectModalLabel"
-         aria-hidden="true">
-      <div class="modal-dialog">
-        <div class="modal-content">
-          <div class="modal-header">
-            <h5 class="modal-title" id="createProjectModalLabel">Create New Project</h5>
-            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"
-                    @click="hideCreateProjectModal"></button>
-          </div>
-          <div class="modal-body">
-            <CreateProject @created="projectCreated" @cancelled="hideCreateProjectModal"/>
-          </div>
-        </div>
-      </div>
-    </div>
   </div>
 </template>
 
-
 <script>
-import {Modal} from 'bootstrap';
-import TaskService from "@/services/task.service.js";
-import ProjectService from "@/services/project.service.js";
-import CreateProject from './CreateProject.vue';
+import ProjectService from '@/services/project.service.js';
+import BoardColumnService from '@/services/board-column.service.js';
+import TaskService from '@/services/task.service.js';
 
 export default {
-  components: {
-    CreateProject
-  },
+  name: 'CreateTask',
+  emits: ['saved-add', 'cancelled-add'],
   data() {
     return {
-      newTaskId: null,
-      newTaskTitle: "",
-      newTaskDescription: "",
-      newTaskCreator: null,
-      errorMessage: "",
-      createProjectModal: null,
-      projectOptions: [],
-      selectedProjectId: null
+      saving: false,
+      errorMessage: '',
+      successMessage: '',
+      projects: [],
+      boardColumns: [],
+      form: this.emptyForm()
+    };
+  },
+  computed: {
+    activeProjects() {
+      return this.projects.filter(project => !project.archived);
+    },
+    sortedBoardColumns() {
+      return [...this.boardColumns].sort((a, b) => (a.position ?? 0) - (b.position ?? 0));
     }
   },
-  mounted() {
-    this.$refs.newItemTitleRef.focus();
-    this.createProjectModal = new Modal(document.getElementById('createProjectModal'));
-    this.loadProjects();
-  },
-  emits: [
-    'saved-add',
-    'cancelled-add'
-  ],
-  computed: {
-    currentUser() {
-      return this.$store.getters["auth/currentUser"];
+  async mounted() {
+    this.$refs.newItemTitleRef?.focus();
+    await this.loadProjects();
+
+    const routeProjectId = this.$route.query.projectId;
+    if (routeProjectId && this.activeProjects.some(project => Number(project.id) === Number(routeProjectId))) {
+      this.form.projectId = Number(routeProjectId);
+      await this.loadBoardColumns();
     }
   },
   methods: {
-    createTask() {
-      // todo: do some consistency checks here
-      const newTask = {
-        title: this.newTaskTitle,
-        description: this.newTaskDescription,
-        creator: {id: this.currentUser.id},
-        project: {id: this.selectedProjectId}
-      }
-
-      console.log("Creating task with project ID:", this.selectedProjectId);
-      console.log("Task object:", newTask);
-
-      TaskService.saveTask(newTask)
-          .then(response => {
-            this.newTaskId = response.data.id;
-
-            this.newTaskId = null;
-            this.newTaskTitle = "";
-            this.newTaskDescription = "";
-            this.newTaskCreator = null;
-            this.selectedProjectId = null;
-
-            this.$emit('saved-add', true, "The task was saved with id " + response.data.id + ".")
-          })
-          .catch(error => {
-            this.errorMessage = error.message;
-            console.error("There was an error!", error);
-            this.$emit('saved-add', false, this.errorMessage)
-          });
+    emptyForm() {
+      return {
+        title: '',
+        description: '',
+        projectId: null,
+        boardColumnId: null,
+        priority: 'MEDIUM',
+        dueDate: '',
+        estimatedMinutes: 0
+      };
     },
-    handleProjectChange() {
-      if(this.selectedProjectId === "__new__"){
-        this.showCreateProjectModal();
-      }
-    },
-    showCreateProjectModal() {
-      this.createProjectModal.show();
-    },
-    hideCreateProjectModal() {
-      this.createProjectModal.hide();
-    },
+
     async loadProjects() {
-      const response = await ProjectService.getAllProjectsByUsersId(this.currentUser.id);
-      this.projectOptions = response.data;
+      try {
+        const response = await ProjectService.getVisibleProjects();
+        this.projects = response.data || [];
+      } catch (error) {
+        this.errorMessage =
+            error?.response?.data?.message ||
+            error?.response?.data ||
+            error?.message ||
+            'Projekte konnten nicht geladen werden.';
+      }
     },
-    projectCreated(newProject) {
-      this.projectOptions.push(newProject);
-      this.selectedProjectId = newProject.id;
-      this.hideCreateProjectModal();
+
+    async loadBoardColumns() {
+      this.boardColumns = [];
+      this.form.boardColumnId = null;
+
+      if (!this.form.projectId) {
+        return;
+      }
+
+      try {
+        const response = await BoardColumnService.getBoardColumns(this.form.projectId);
+        this.boardColumns = response.data || [];
+      } catch (error) {
+        this.errorMessage =
+            error?.response?.data?.message ||
+            error?.response?.data ||
+            error?.message ||
+            'Board-Spalten konnten nicht geladen werden.';
+      }
+    },
+
+    async createTask() {
+      this.saving = true;
+      this.errorMessage = '';
+      this.successMessage = '';
+
+      try {
+        const payload = {
+          projectId: Number(this.form.projectId),
+          boardColumnId: this.form.boardColumnId ? Number(this.form.boardColumnId) : null,
+          title: this.form.title,
+          description: this.form.description || null,
+          priority: this.form.priority,
+          dueDate: this.form.dueDate ? new Date(this.form.dueDate).toISOString() : null,
+          estimatedMinutes: Number(this.form.estimatedMinutes || 0),
+          assigneeIds: [],
+          labelIds: []
+        };
+
+        const response = await TaskService.createTask(payload);
+        this.successMessage = 'Task wurde erfolgreich angelegt.';
+        this.$emit('saved-add', true, response.data);
+        this.resetForm();
+
+        if (payload.projectId) {
+          this.$router.push({
+            path: '/boards',
+            query: { projectId: payload.projectId }
+          });
+        }
+      } catch (error) {
+        this.errorMessage =
+            error?.response?.data?.message ||
+            error?.response?.data ||
+            error?.message ||
+            'Task konnte nicht angelegt werden.';
+        this.$emit('saved-add', false, this.errorMessage);
+      } finally {
+        this.saving = false;
+      }
+    },
+
+    resetForm() {
+      const currentProjectId = this.form.projectId;
+      this.form = this.emptyForm();
+      this.form.projectId = currentProjectId;
     }
   }
-}
+};
 </script>
-
-
-<style></style>

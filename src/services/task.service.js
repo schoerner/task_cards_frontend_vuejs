@@ -1,53 +1,84 @@
 import axios from 'axios';
 import authHeader from './auth-header';
-import TaskAppConfig from "@/task_app.config.js";
+import TaskAppConfig from '@/task_app.config.js';
 
-const API_URL = TaskAppConfig.baseUrl() + '/tasks';
+const API_URL = `${TaskAppConfig.baseUrl()}/tasks`;
+const PROJECTS_API_URL = `${TaskAppConfig.baseUrl()}/projects`;
 
 class TaskService {
-    // 🔹 Alle Tasks des eingeloggten Users (oder alle, wenn Admin)
-    getAllTasks() {
-        return axios.get(API_URL, { headers: authHeader() });
+    getTasksByProject(projectId) {
+        return axios.get(`${PROJECTS_API_URL}/${projectId}/tasks`, { headers: authHeader() });
     }
 
-    // 🔹 Tasks, an denen ich beteiligt bin (Creator oder Assignee)
-    getMyTasks() {
-        return axios.get(`${API_URL}/my`, { headers: authHeader() });
+    getTask(taskId) {
+        return axios.get(`${API_URL}/${taskId}`, { headers: authHeader() });
     }
 
-    // 🔹 Tasks, die ich selbst erstellt habe
-    getMyOwnedTasks() {
-        return axios.get(`${API_URL}/my/owned`, { headers: authHeader() });
+    createTask(task) {
+        return axios.post(`${API_URL}`, task, { headers: authHeader() });
     }
 
-    // 🔹 Einzelnes Task holen
-    getTask(taskID) {
-        return axios.get(`${API_URL}/${taskID}`, { headers: authHeader() });
-    }
-
-    // 🔹 Task anlegen (nur MODERATOR/ADMIN)
     saveTask(task) {
-        return axios.post(API_URL, task, { headers: authHeader() });
+        return this.createTask(task);
     }
 
-    // 🔹 Task updaten (REST-konform mit ID in URL)
-    updateTask(task) {
-        return axios.put(`${API_URL}/${task.id}`, task, { headers: authHeader() });
+    updateTask(taskIdOrTask, taskPayload = null) {
+        let taskId = taskIdOrTask;
+        let payload = taskPayload;
+
+        if (typeof taskIdOrTask === 'object' && taskIdOrTask !== null) {
+            taskId = taskIdOrTask.id;
+            payload = taskIdOrTask;
+        }
+
+        return axios.put(`${API_URL}/${taskId}`, payload, { headers: authHeader() });
     }
 
-    // 🔹 Task löschen (nur MODERATOR/ADMIN)
-    deleteTask(taskID) {
-        return axios.delete(`${API_URL}/${taskID}`, { headers: authHeader() });
+    moveTask(taskId, boardColumnId) {
+        return axios.patch(
+            `${API_URL}/${taskId}/move`,
+            null,
+            {
+                headers: authHeader(),
+                params: { boardColumnId }
+            }
+        );
     }
 
-    // 🔹 Task starten
-    startTask(taskID) {
-        return axios.post(`${API_URL}/${taskID}/start`, {}, { headers: authHeader() });
+    archiveTask(taskId) {
+        return axios.patch(`${API_URL}/${taskId}/archive`, {}, { headers: authHeader() });
     }
 
-    // 🔹 Task stoppen
-    stopTask(taskID) {
-        return axios.post(`${API_URL}/${taskID}/stop`, {}, { headers: authHeader() });
+    restoreTask(taskId) {
+        return axios.patch(`${API_URL}/${taskId}/restore`, {}, { headers: authHeader() });
+    }
+
+    deleteTask(taskId) {
+        return axios.delete(`${API_URL}/${taskId}`, { headers: authHeader() });
+    }
+
+    getTimeRecords(taskId) {
+        return axios.get(`${API_URL}/${taskId}/time-records`, { headers: authHeader() });
+    }
+
+    isTimeTrackingActive(taskId) {
+        return axios.get(`${API_URL}/${taskId}/time-tracking/active`, { headers: authHeader() });
+    }
+
+    startTimeTracking(taskId) {
+        return axios.post(`${API_URL}/${taskId}/time-tracking/start`, {}, { headers: authHeader() });
+    }
+
+    stopTimeTracking(taskId) {
+        return axios.post(`${API_URL}/${taskId}/time-tracking/stop`, {}, { headers: authHeader() });
+    }
+
+    startTask(taskId) {
+        return this.startTimeTracking(taskId);
+    }
+
+    stopTask(taskId) {
+        return this.stopTimeTracking(taskId);
     }
 }
 

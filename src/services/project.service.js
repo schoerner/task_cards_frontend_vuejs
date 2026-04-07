@@ -1,39 +1,36 @@
 import axios from 'axios';
 import authHeader from './auth-header';
-import TaskAppConfig from "@/task_app.config.js";
+import TaskAppConfig from '@/task_app.config.js';
 
-const API_URL = TaskAppConfig.baseUrl() + '/projects';
+const API_URL = `${TaskAppConfig.baseUrl()}/projects`;
 
 class ProjectService {
+    getVisibleProjects() {
+        return axios.get(`${API_URL}/my`, { headers: authHeader() });
+    }
 
-    // Projekte, bei denen der User Mitglied ist
     getMyProjects() {
-        return axios.get(API_URL + "/my", { headers: authHeader() });
+        return this.getVisibleProjects();
     }
 
-    // Projekte, die der User selbst erstellt hat
-    getMyOwnedProjects() {
-        return axios.get(API_URL + "/my-owned", { headers: authHeader() });
+    getProject(projectId) {
+        return axios.get(`${API_URL}/${projectId}`, { headers: authHeader() });
     }
 
-    // Einzelnes Projekt abrufen
-    getProject(id) {
-        return axios.get(API_URL + "/" + id, { headers: authHeader() });
-    }
-
-    // Projekt erstellen (nur Moderator/Admin)
     createProject(project) {
-        return axios.post(API_URL, project, { headers: authHeader() });
+        return axios.post(`${API_URL}`, project, { headers: authHeader() });
     }
 
-    // Projekt aktualisieren (nur Owner/Admin)
-    updateProject(id, project) {
-        return axios.put(API_URL + "/" + id, project, { headers: authHeader() });
+    updateProject(projectId, project) {
+        return axios.put(`${API_URL}/${projectId}`, project, { headers: authHeader() });
     }
 
-    // Projekt löschen (nur Owner/Admin)
-    deleteProject(id) {
-        return axios.delete(API_URL + "/" + id, { headers: authHeader() });
+    archiveProject(projectId) {
+        return axios.patch(`${API_URL}/${projectId}/archive`, {}, { headers: authHeader() });
+    }
+
+    deleteProject(projectId) {
+        return axios.delete(`${API_URL}/${projectId}`, { headers: authHeader() });
     }
 }
 

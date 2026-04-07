@@ -8,12 +8,12 @@
       {{ errorMessage }}
     </div>
 
-    <div class="card shadow-sm border-0">
+    <div class="card shadow-sm border-0 mb-4">
       <div class="card-body p-4">
         <div class="d-flex flex-column flex-lg-row justify-content-between align-items-lg-start gap-4">
           <div>
             <h1 class="h3 mb-1">Mein Profil</h1>
-            <p class="text-muted mb-3">Persönliche Kontodaten und Sicherheitseinstellungen</p>
+            <p class="text-muted mb-3">Persönliche Profildaten und Sicherheitseinstellungen</p>
 
             <div class="d-flex flex-wrap gap-2 mb-3">
               <span
@@ -28,6 +28,9 @@
           </div>
 
           <div class="d-flex flex-wrap gap-2">
+            <button type="button" class="btn btn-outline-primary" @click="openEditProfileModal">
+              Profil bearbeiten
+            </button>
             <button type="button" class="btn btn-outline-primary" @click="openPasswordModal">
               Passwort ändern
             </button>
@@ -36,39 +39,53 @@
 
         <hr class="my-4">
 
-        <div class="row g-4">
+        <div v-if="loading" class="text-muted mb-3">Profil wird geladen...</div>
+
+        <div v-else class="row g-4">
           <div class="col-md-6">
             <div class="profile-item">
-              <div class="profile-label">ID</div>
-              <div class="profile-value">{{ currentUser?.id ?? '-' }}</div>
+              <div class="profile-label">Anzeigename</div>
+              <div class="profile-value">{{ profile?.name || '-' }}</div>
             </div>
           </div>
 
           <div class="col-md-6">
             <div class="profile-item">
-              <div class="profile-label">E-Mail</div>
+              <div class="profile-label">Kontakt-E-Mail</div>
+              <div class="profile-value">{{ profile?.contactEmail || '-' }}</div>
+            </div>
+          </div>
+
+          <div class="col-md-6">
+            <div class="profile-item">
+              <div class="profile-label">Bild-URL</div>
+              <div class="profile-value">
+                <a v-if="profile?.pictureUrl" :href="profile.pictureUrl" target="_blank" rel="noopener noreferrer">
+                  {{ profile.pictureUrl }}
+                </a>
+                <span v-else>-</span>
+              </div>
+            </div>
+          </div>
+
+          <div class="col-md-6">
+            <div class="profile-item">
+              <div class="profile-label">Login-E-Mail</div>
               <div class="profile-value">{{ currentUser?.email || '-' }}</div>
             </div>
           </div>
 
-          <div class="col-md-6">
+          <div class="col-12">
             <div class="profile-item">
-              <div class="profile-label">Vorname</div>
-              <div class="profile-value">{{ currentUser?.firstName || '-' }}</div>
+              <div class="profile-label">Beschreibung</div>
+              <div class="profile-value">{{ profile?.description || '-' }}</div>
             </div>
           </div>
 
           <div class="col-md-6">
             <div class="profile-item">
-              <div class="profile-label">Nachname</div>
-              <div class="profile-value">{{ currentUser?.lastName || '-' }}</div>
-            </div>
-          </div>
-
-          <div class="col-md-6">
-            <div class="profile-item">
-              <div class="profile-label">Registriert am</div>
-              <div class="profile-value">{{ formatDate(currentUser?.registration) }}</div>
+              <div class="profile-label">Benutzer-ID</div>
+              <div class="profile-value">{{ currentUser?.id ?? '-' }}</div>
             </div>
           </div>
 
@@ -82,12 +99,77 @@
       </div>
     </div>
 
+    <div class="modal fade" id="editProfileModal" tabindex="-1" aria-hidden="true">
+      <div class="modal-dialog modal-lg modal-dialog-centered">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h5 class="modal-title">Profil bearbeiten</h5>
+            <button type="button" class="btn-close" @click="hideEditProfileModal"></button>
+          </div>
+          <div class="modal-body">
+            <div v-if="profileErrorMessage" class="alert alert-danger" role="alert">
+              {{ profileErrorMessage }}
+            </div>
+
+            <form @submit.prevent="saveProfile">
+              <div class="mb-3">
+                <label class="form-label">Anzeigename</label>
+                <input
+                    v-model.trim="profileForm.name"
+                    type="text"
+                    class="form-control"
+                    maxlength="255"
+                    required
+                >
+              </div>
+
+              <div class="mb-3">
+                <label class="form-label">Kontakt-E-Mail</label>
+                <input
+                    v-model.trim="profileForm.contactEmail"
+                    type="email"
+                    class="form-control"
+                    maxlength="255"
+                >
+              </div>
+
+              <div class="mb-3">
+                <label class="form-label">Bild-URL</label>
+                <input
+                    v-model.trim="profileForm.pictureUrl"
+                    type="url"
+                    class="form-control"
+                    maxlength="1000"
+                >
+              </div>
+
+              <div class="mb-0">
+                <label class="form-label">Beschreibung</label>
+                <textarea
+                    v-model.trim="profileForm.description"
+                    class="form-control"
+                    rows="5"
+                    maxlength="5000"
+                ></textarea>
+              </div>
+            </form>
+          </div>
+          <div class="modal-footer">
+            <button type="button" class="btn btn-secondary" @click="hideEditProfileModal">Abbrechen</button>
+            <button type="button" class="btn btn-primary" @click="saveProfile" :disabled="savingProfile">
+              {{ savingProfile ? 'Speichert...' : 'Speichern' }}
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+
     <div class="modal fade" id="changePasswordModal" tabindex="-1" aria-hidden="true">
       <div class="modal-dialog modal-dialog-centered">
         <div class="modal-content">
           <div class="modal-header">
             <h5 class="modal-title">Passwort ändern</h5>
-            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            <button type="button" class="btn-close" @click="hidePasswordModal"></button>
           </div>
           <div class="modal-body">
             <div v-if="passwordErrorMessage" class="alert alert-danger" role="alert">
@@ -127,7 +209,7 @@
             </form>
           </div>
           <div class="modal-footer">
-            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Abbrechen</button>
+            <button type="button" class="btn btn-secondary" @click="hidePasswordModal">Abbrechen</button>
             <button type="button" class="btn btn-primary" @click="changePassword">
               Passwort speichern
             </button>
@@ -142,16 +224,23 @@
 import { Modal } from 'bootstrap';
 import { jwtDecode } from 'jwt-decode';
 import UserService from '@/services/user.service';
+import UserProfileService from '@/services/user-profile.service';
 
 export default {
   name: 'UserProfile',
   data() {
     return {
+      loading: false,
+      savingProfile: false,
+      profile: null,
       changePasswordModalInstance: null,
+      editProfileModalInstance: null,
       errorMessage: '',
       successMessage: '',
+      profileErrorMessage: '',
       passwordErrorMessage: '',
-      passwordForm: this.emptyPasswordForm(),
+      profileForm: this.emptyProfileForm(),
+      passwordForm: this.emptyPasswordForm()
     };
   },
   computed: {
@@ -163,44 +252,124 @@ export default {
         return [];
       }
 
-      return this.currentUser.roles.map(role => {
-        if (typeof role === 'string') {
-          return role;
-        }
-        return role?.name || '';
-      }).filter(Boolean);
-    },
+      return this.currentUser.roles
+          .map(role => typeof role === 'string' ? role : role?.name || '')
+          .filter(Boolean);
+    }
   },
-  mounted() {
-    if (!this.currentUser) {
+  async mounted() {
+    if (!this.currentUser?.id) {
       this.$router.push('/login');
       return;
     }
 
     this.changePasswordModalInstance = new Modal(document.getElementById('changePasswordModal'));
+    this.editProfileModalInstance = new Modal(document.getElementById('editProfileModal'));
+    await this.loadProfile();
   },
   methods: {
     emptyPasswordForm() {
       return {
         currentPassword: '',
         newPassword: '',
-        confirmNewPassword: '',
+        confirmNewPassword: ''
       };
     },
+
+    emptyProfileForm() {
+      return {
+        name: '',
+        contactEmail: '',
+        pictureUrl: '',
+        description: ''
+      };
+    },
+
+    async loadProfile() {
+      this.loading = true;
+      this.errorMessage = '';
+
+      try {
+        const response = await UserProfileService.getOwnProfile();
+        this.profile = response.data;
+
+        this.profileForm = {
+          name: response.data?.name || '',
+          contactEmail: response.data?.contactEmail || '',
+          pictureUrl: response.data?.pictureUrl || '',
+          description: response.data?.description || ''
+        };
+      } catch (error) {
+        this.errorMessage =
+            error?.response?.data?.message ||
+            error?.response?.data ||
+            error?.message ||
+            'Profil konnte nicht geladen werden.';
+      } finally {
+        this.loading = false;
+      }
+    },
+
+    openEditProfileModal() {
+      this.profileErrorMessage = '';
+      this.profileForm = {
+        name: this.profile?.name || '',
+        contactEmail: this.profile?.contactEmail || '',
+        pictureUrl: this.profile?.pictureUrl || '',
+        description: this.profile?.description || ''
+      };
+      this.editProfileModalInstance.show();
+    },
+
+    hideEditProfileModal() {
+      this.profileErrorMessage = '';
+      this.editProfileModalInstance.hide();
+    },
+
+    async saveProfile() {
+      this.savingProfile = true;
+      this.profileErrorMessage = '';
+      this.errorMessage = '';
+      this.successMessage = '';
+
+      try {
+        const payload = {
+          name: this.profileForm.name,
+          contactEmail: this.profileForm.contactEmail || null,
+          pictureUrl: this.profileForm.pictureUrl || null,
+          description: this.profileForm.description || null
+        };
+
+        const response = await UserProfileService.updateOwnProfile(payload);
+        this.profile = response.data;
+        this.editProfileModalInstance.hide();
+        this.successMessage = 'Profil wurde erfolgreich aktualisiert.';
+      } catch (error) {
+        this.profileErrorMessage =
+            error?.response?.data?.message ||
+            error?.response?.data ||
+            error?.message ||
+            'Profil konnte nicht gespeichert werden.';
+      } finally {
+        this.savingProfile = false;
+      }
+    },
+
     openPasswordModal() {
       this.passwordErrorMessage = '';
       this.passwordForm = this.emptyPasswordForm();
       this.changePasswordModalInstance.show();
     },
+
+    hidePasswordModal() {
+      this.passwordErrorMessage = '';
+      this.changePasswordModalInstance.hide();
+    },
+
     async changePassword() {
       this.passwordErrorMessage = '';
       this.errorMessage = '';
       this.successMessage = '';
-
-      if (!this.currentUser?.id) {
-        this.passwordErrorMessage = 'Kein gültiger Benutzer geladen.';
-        return;
-      }
 
       if (this.passwordForm.newPassword !== this.passwordForm.confirmNewPassword) {
         this.passwordErrorMessage = 'Die neuen Passwörter stimmen nicht überein.';
@@ -216,7 +385,7 @@ export default {
         await UserService.changePassword(this.currentUser.id, {
           currentPassword: this.passwordForm.currentPassword,
           newPassword: this.passwordForm.newPassword,
-          confirmNewPassword: this.passwordForm.confirmNewPassword,
+          confirmNewPassword: this.passwordForm.confirmNewPassword
         });
 
         this.changePasswordModalInstance.hide();
@@ -224,25 +393,20 @@ export default {
         this.successMessage = 'Das Passwort wurde erfolgreich geändert.';
       } catch (error) {
         this.passwordErrorMessage =
-            error?.response?.data?.message || 'Das Passwort konnte nicht geändert werden.';
+            error?.response?.data?.message ||
+            error?.response?.data ||
+            error?.message ||
+            'Das Passwort konnte nicht geändert werden.';
       }
     },
+
     roleBadgeClass(roleName) {
       if (roleName === 'ROLE_ADMIN') {
         return 'text-bg-danger';
       }
-      if (roleName === 'ROLE_MODERATOR') {
-        return 'text-bg-purple';
-      }
       return 'text-bg-primary';
     },
-    formatDate(value) {
-      if (!value) {
-        return '-';
-      }
 
-      return new Date(value).toLocaleString('de-DE');
-    },
     formatTokenExpiration(token) {
       if (!token) {
         return '-';
@@ -253,13 +417,12 @@ export default {
         if (!decoded?.exp) {
           return '-';
         }
-
         return new Date(decoded.exp * 1000).toLocaleString('de-DE');
       } catch {
         return '-';
       }
-    },
-  },
+    }
+  }
 };
 </script>
 
@@ -282,10 +445,5 @@ export default {
   font-size: 1rem;
   font-weight: 500;
   word-break: break-word;
-}
-
-.text-bg-purple {
-  background-color: #6f42c1;
-  color: #fff;
 }
 </style>

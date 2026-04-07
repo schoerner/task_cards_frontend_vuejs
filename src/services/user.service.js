@@ -1,24 +1,20 @@
 import axios from 'axios';
 import authHeader from './auth-header';
-import TaskAppConfig from "@/task_app.config.js";
+import TaskAppConfig from '@/task_app.config.js';
 
-const API_URL = TaskAppConfig.baseUrl() + '/users';
+const API_URL = `${TaskAppConfig.baseUrl()}/users`;
 
 class UserService {
-    getPublicContent() {
-        return axios.get(API_URL + '');
+    getUserById(userId) {
+        return axios.get(`${API_URL}/${userId}`, { headers: authHeader() });
     }
 
-    getUserBoard() {
-        return axios.get(API_URL + 'user', { headers: authHeader() });
+    updateUser(userId, payload) {
+        return axios.put(`${API_URL}/${userId}`, payload, { headers: authHeader() });
     }
 
-    getModeratorBoard() {
-        return axios.get(API_URL + 'mod', { headers: authHeader() });
-    }
-
-    getAdminBoard() {
-        return axios.get(API_URL + 'admin', { headers: authHeader() });
+    deleteUser(userId) {
+        return axios.delete(`${API_URL}/${userId}`, { headers: authHeader() });
     }
 
     changePassword(userId, payload) {

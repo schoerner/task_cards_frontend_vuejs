@@ -1,61 +1,57 @@
-import { createWebHistory, createRouter } from "vue-router";
-import store from "@/store";
+import { createWebHistory, createRouter } from 'vue-router';
+import store from '@/store';
 
-import TaskCards from "@/components/TaskCards.vue";
-import CreateTask from "@/components/CreateTask.vue";
-import UserLogin from "@/components/UserLogin.vue";
-import UserSignUp from "@/components/UserSignUp.vue";
-import About from "@/components/About.vue";
-import Impressum from "@/components/Impressum.vue";
-import Welcome from "@/components/Welcome.vue";
-import MyOwnedProjectManager from "@/components/MyOwnedProjectManager.vue";
-import CreateProject from "@/components/CreateProject.vue";
-import ProjectMemberOverview from "@/components/ProjectMemberOverview.vue";
-import UserManagement from "@/components/UserManagement.vue";
+import Boards from '@/components/Boards.vue';
+import CreateTask from '@/components/CreateTask.vue';
+import UserLogin from '@/components/UserLogin.vue';
+import UserSignUp from '@/components/UserSignUp.vue';
+import About from '@/components/About.vue';
+import Impressum from '@/components/Impressum.vue';
+import Welcome from '@/components/Welcome.vue';
+import MyOwnedProjectManager from '@/components/MyOwnedProjectManager.vue';
+import ProjectMemberOverview from '@/components/ProjectMemberOverview.vue';
+import UserManagement from '@/components/UserManagement.vue';
 
-const UserProfile = () => import("./components/UserProfile.vue");
+const UserProfile = () => import('@/components/UserProfile.vue');
 
 const routes = [
-    { path: "/", component: Welcome },
-    { path: "/tasks", component: TaskCards, meta: { requiresAuth: true } },
-    { path: "/tasks/add", component: CreateTask, meta: { requiresAuth: true } },
-    { path: "/projects/member", component: ProjectMemberOverview, meta: { requiresAuth: true } },
-    { path: "/projects", component: MyOwnedProjectManager, meta: { requiresAuth: true } },
-    { path: "/projects/create", component: CreateProject, meta: { requiresAuth: true } },
-    { path: "/login", component: UserLogin },
-    { path: "/signup", component: UserSignUp, meta: { requiresAdmin: true } },
-    { path: "/about", component: About },
-    { path: "/impressum", component: Impressum },
-    { path: "/profile", name: "UserProfile", component: UserProfile, meta: { requiresAuth: true } },
-    { path: "/user-management", component: UserManagement, meta: { requiresAdmin: true } },
+    { path: '/', component: Welcome },
+    { path: '/boards', component: Boards, meta: { requiresAuth: true } },
+    { path: '/tasks/add', component: CreateTask, meta: { requiresAuth: true } },
+    { path: '/projects', component: MyOwnedProjectManager, meta: { requiresAuth: true } },
+    { path: '/projects/member', component: ProjectMemberOverview, meta: { requiresAuth: true } },
+    { path: '/login', component: UserLogin },
+    { path: '/signup', component: UserSignUp, meta: { requiresAdmin: true } },
+    { path: '/about', component: About },
+    { path: '/impressum', component: Impressum },
+    { path: '/profile', name: 'UserProfile', component: UserProfile, meta: { requiresAuth: true } },
+    { path: '/user-management', component: UserManagement, meta: { requiresAdmin: true } }
 ];
 
 const router = createRouter({
     history: createWebHistory(),
-    routes,
+    routes
 });
 
 router.beforeEach((to, from, next) => {
-    const loggedIn = store.getters["auth/loggedIn"];
-    const isAdmin = store.getters["auth/isAdmin"];
+    const loggedIn = store.getters['auth/loggedIn'];
+    const isAdmin = store.getters['auth/isAdmin'];
 
     if (to.meta.requiresAdmin) {
         if (!loggedIn) {
-            next("/login");
+            next('/login');
             return;
         }
 
         if (!isAdmin) {
-            next("/tasks");
+            next('/tasks');
             return;
         }
     }
 
-    if (to.meta.requiresAuth) {
-        if (!loggedIn) {
-            next("/login");
-            return;
-        }
+    if (to.meta.requiresAuth && !loggedIn) {
+        next('/login');
+        return;
     }
 
     next();

@@ -1,129 +1,237 @@
 <template>
   <div class="container">
-    <!-- Error -->
-    <div v-if="errorMessage" class="alert alert-danger d-flex align-items-center" role="alert">
-      <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor"
-           class="bi bi-exclamation-triangle me-2" viewBox="0 0 16 16">
-        <path
-            d="M7.938 2.016A.13.13 0 0 1 8.002 2a.13.13 0 0 1 .063.016.15.15 0 0 1 .054.057l6.857 11.667c.036.06.035.124.002.183a.2.2 0 0 1-.054.06.1.1 0 0 1-.066.017H1.146a.1.1 0 0 1-.066-.017.2.2 0 0 1-.054-.06.18.18 0 0 1 .002-.183L7.884 2.073a.15.15 0 0 1 .054-.057m1.044-.45a1.13 1.13 0 0 0-1.96 0L.165 13.233c-.457.778.091 1.767.98 1.767h13.713c.889 0 1.438-.99.98-1.767z"/>
-        <path
-            d="M7.002 12a1 1 0 1 1 2 0 1 1 0 0 1-2 0M7.1 5.995a.905.905 0 1 1 1.8 0l-.35 3.507a.552.552 0 0 1-1.1 0z"/>
-      </svg>
-      <p class="mb-0">{{ errorMessage }}</p>
+    <div v-if="errorMessage" class="alert alert-danger" role="alert">
+      {{ errorMessage }}
     </div>
 
-    <!-- Bearbeiten-Formular -->
-    <form v-show="showForm" @submit.prevent="saveEditedItem">
+    <form v-if="localTask" @submit.prevent="saveEditedTask">
       <div class="row mb-3">
-        <label for="title" class="col-sm-2 col-form-label">Title:</label>
-        <div class="col-sm-10">
-          <input id="title" class="form-control" v-model="editItemTitle" ref="editItemTitle" required />
+        <label for="taskTitle" class="col-sm-3 col-form-label">Titel</label>
+        <div class="col-sm-9">
+          <input
+              id="taskTitle"
+              ref="editTaskTitle"
+              v-model.trim="localTask.title"
+              class="form-control"
+              maxlength="255"
+              required
+          />
         </div>
       </div>
+
       <div class="row mb-3">
-        <label for="description" class="col-sm-2 col-form-label">Description:</label>
-        <div class="col-sm-10">
-          <textarea id="description" class="form-control" rows="4"
-                    v-model="editItemDescription" required></textarea>
+        <label for="taskDescription" class="col-sm-3 col-form-label">Beschreibung</label>
+        <div class="col-sm-9">
+          <textarea
+              id="taskDescription"
+              v-model.trim="localTask.description"
+              rows="4"
+              maxlength="20000"
+              class="form-control"
+          ></textarea>
         </div>
       </div>
+
       <div class="row mb-3">
-        <div class="col-sm-2">Project:</div>
-        <div class="col-sm-10"><span class="badge text-bg-info">{{task.project.name}}</span></div>
+        <label for="taskPriority" class="col-sm-3 col-form-label">Priorität</label>
+        <div class="col-sm-9">
+          <select id="taskPriority" v-model="localTask.priority" class="form-select">
+            <option value="LOW">LOW</option>
+            <option value="MEDIUM">MEDIUM</option>
+            <option value="HIGH">HIGH</option>
+            <option value="URGENT">URGENT</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="row mb-3">
+        <label for="taskDueDate" class="col-sm-3 col-form-label">Fällig bis</label>
+        <div class="col-sm-9">
+          <input
+              id="taskDueDate"
+              v-model="localTask.dueDate"
+              type="datetime-local"
+              class="form-control"
+          />
+        </div>
+      </div>
+
+      <div class="row mb-3">
+        <label for="taskEstimatedMinutes" class="col-sm-3 col-form-label">Schätzung (Min.)</label>
+        <div class="col-sm-9">
+          <input
+              id="taskEstimatedMinutes"
+              v-model.number="localTask.estimatedMinutes"
+              type="number"
+              min="0"
+              class="form-control"
+          />
+        </div>
+      </div>
+
+      <div class="row mb-3">
+        <label for="taskBoardColumn" class="col-sm-3 col-form-label">Spalte</label>
+        <div class="col-sm-9">
+          <select id="taskBoardColumn" v-model="localTask.boardColumnId" class="form-select">
+            <option v-for="column in sortedBoardColumns" :key="column.id" :value="column.id">
+              {{ column.name }}
+            </option>
+          </select>
+        </div>
+      </div>
+
+      <div class="form-check mb-3">
+        <input
+            id="taskArchived"
+            v-model="localTask.archived"
+            class="form-check-input"
+            type="checkbox"
+        />
+        <label class="form-check-label" for="taskArchived">
+          Task archiviert
+        </label>
       </div>
 
       <div class="d-flex justify-content-between">
         <div>
-          <button class="btn btn-primary" type="submit">Save</button>
-          <button class="btn btn-secondary ms-2" type="reset">Clear</button>
+          <button class="btn btn-primary" type="submit" :disabled="saving">
+            {{ saving ? 'Speichert...' : 'Speichern' }}
+          </button>
+          <button class="btn btn-secondary ms-2" type="button" @click="$emit('cancelled-edit')">
+            Abbrechen
+          </button>
         </div>
         <div>
-          <button type="button" class="btn btn-danger" @click="openDeleteModal">
-            Delete
+          <button type="button" class="btn btn-danger" @click="deleteTask">
+            Löschen
           </button>
         </div>
       </div>
     </form>
-
-    <!-- Bootstrap Delete Modal -->
-    <div class="modal fade" id="deleteConfirmModal" tabindex="-1" aria-hidden="true">
-      <div class="modal-dialog modal-dialog-centered">
-        <div class="modal-content">
-          <div class="modal-header bg-danger text-white">
-            <h5 class="modal-title">Delet Task?</h5>
-            <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
-          </div>
-          <div class="modal-body">
-            <p>Do you really want to delete the task?</p>
-            <strong>{{ editItemTitle }}</strong>
-          </div>
-          <div class="modal-footer">
-            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
-            <button type="button" class="btn btn-danger" @click="confirmDelete">Yes, delete</button>
-          </div>
-        </div>
-      </div>
-    </div>
   </div>
 </template>
 
 <script>
-import { Modal } from 'bootstrap';
-import TaskService from "@/services/task.service.js";
+import BoardColumnService from '@/services/board-column.service.js';
+import TaskService from '@/services/task.service.js';
 
 export default {
+  name: 'EditTask',
   props: {
-    task: Object
+    task: {
+      type: Object,
+      required: true
+    }
   },
-  emits: ['saved-edit', 'cancelled-edit'],
+  emits: ['saved-edit', 'cancelled-edit', 'deleted'],
   data() {
     return {
-      showForm: true,
-      editItemTitle: "",
-      editItemDescription: "",
-      errorMessage: "",
+      saving: false,
+      errorMessage: '',
+      boardColumns: [],
+      localTask: null
     };
   },
-  mounted() {
-    this.editItemTitle = this.task.title;
-    this.editItemDescription = this.task.description;
-    this.$refs.editItemTitle.focus();
+  computed: {
+    sortedBoardColumns() {
+      return [...this.boardColumns].sort((a, b) => (a.position ?? 0) - (b.position ?? 0));
+    }
+  },
+  async mounted() {
+    this.localTask = {
+      id: this.task.id,
+      title: this.task.title || '',
+      description: this.task.description || '',
+      priority: this.task.priority || 'MEDIUM',
+      dueDate: this.toLocalDateTime(this.task.dueDate),
+      estimatedMinutes: this.task.estimatedMinutes ?? 0,
+      trackedMinutes: this.task.trackedMinutes ?? 0,
+      boardColumnId: this.task.boardColumn?.id ?? null,
+      archived: !!this.task.archived,
+      projectId: this.task.project?.id ?? null
+    };
+
+    if (this.localTask.projectId) {
+      await this.loadBoardColumns(this.localTask.projectId);
+    }
+
+    this.$nextTick(() => {
+      this.$refs.editTaskTitle?.focus();
+    });
   },
   methods: {
-    async saveEditedItem() {
-      this.task.title = this.editItemTitle;
-      this.task.description = this.editItemDescription;
+    async loadBoardColumns(projectId) {
+      try {
+        const response = await BoardColumnService.getBoardColumns(projectId);
+        this.boardColumns = response.data || [];
+      } catch (error) {
+        this.errorMessage =
+            error?.response?.data?.message ||
+            error?.response?.data ||
+            error?.message ||
+            'Board-Spalten konnten nicht geladen werden.';
+      }
+    },
+
+    async saveEditedTask() {
+      this.saving = true;
+      this.errorMessage = '';
 
       try {
-        await TaskService.updateTask(this.task);
-        this.showForm = false;
-        this.$emit('saved-edit', true, "The task has been updated.");
+        const payload = {
+          title: this.localTask.title,
+          description: this.localTask.description || null,
+          boardColumnId: this.localTask.boardColumnId ? Number(this.localTask.boardColumnId) : null,
+          priority: this.localTask.priority,
+          dueDate: this.localTask.dueDate ? new Date(this.localTask.dueDate).toISOString() : null,
+          estimatedMinutes: Number(this.localTask.estimatedMinutes || 0),
+          trackedMinutes: Number(this.localTask.trackedMinutes || 0),
+          archived: !!this.localTask.archived,
+          assigneeIds: [],
+          labelIds: []
+        };
+
+        const response = await TaskService.updateTask(this.localTask.id, payload);
+        this.$emit('saved-edit', true, 'Task wurde aktualisiert.', response.data);
       } catch (error) {
-        this.errorMessage = "Fehler beim Speichern: " + error.message;
+        this.errorMessage =
+            error?.response?.data?.message ||
+            error?.response?.data ||
+            error?.message ||
+            'Task konnte nicht gespeichert werden.';
         this.$emit('saved-edit', false, this.errorMessage);
+      } finally {
+        this.saving = false;
       }
     },
-    openDeleteModal() {
-      const modalEl = document.getElementById('deleteConfirmModal');
-      const modal = new Modal(modalEl);
-      modal.show();
-    },
-    async confirmDelete() {
+
+    async deleteTask() {
       try {
-        await TaskService.deleteTask(this.task.id);
-        const modal = Modal.getInstance(document.getElementById('deleteConfirmModal'));
-        modal.hide();
-        this.$emit('saved-edit', true, "The task was deleted successfully."); // Oder separater Event wie 'deleted'
+        await TaskService.deleteTask(this.localTask.id);
+        this.$emit('deleted', this.localTask.id);
       } catch (error) {
-        this.errorMessage = "Error while deleting: " + error.message;
+        this.errorMessage =
+            error?.response?.data?.message ||
+            error?.response?.data ||
+            error?.message ||
+            'Task konnte nicht gelöscht werden.';
       }
+    },
+
+    toLocalDateTime(value) {
+      if (!value) {
+        return '';
+      }
+
+      const date = new Date(value);
+      if (Number.isNaN(date.getTime())) {
+        return '';
+      }
+
+      const pad = (number) => String(number).padStart(2, '0');
+
+      return `${date.getFullYear()}-${pad(date.getMonth() + 1)}-${pad(date.getDate())}T${pad(date.getHours())}:${pad(date.getMinutes())}`;
     }
   }
 };
 </script>
-
-<style scoped>
-textarea {
-  resize: vertical;
-}
-</style>

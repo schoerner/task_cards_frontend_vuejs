@@ -3,94 +3,157 @@
     <header class="navbar navbar-expand-lg bd-navbar navbar-dark sticky-top">
       <nav class="container-xxl bd-gutter flex-wrap flex-lg-nowrap" aria-label="Main navigation">
         <div class="d-lg-none" style="width: 2.25rem;"></div>
+
         <router-link to="/" class="navbar-brand">
           <img src="/img/test_logo.drawio.svg" alt="Logo task.acosci.de" class="d-inline-block align-text-top">
         </router-link>
-        <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarScroll"
-          aria-controls="navbarScroll" aria-expanded="false" aria-label="Toggle navigation">
+
+        <button
+            class="navbar-toggler"
+            type="button"
+            data-bs-toggle="collapse"
+            data-bs-target="#navbarScroll"
+            aria-controls="navbarScroll"
+            aria-expanded="false"
+            aria-label="Toggle navigation"
+        >
           <span class="navbar-toggler-icon"></span>
         </button>
+
         <div class="collapse navbar-collapse" id="navbarScroll">
-          <ul class="navbar-nav me-auto my-2 my-lg-0 navbar-nav-scroll" style="--bs-scroll-height: 100px;">
+          <div class="d-flex flex-column flex-lg-row w-100 justify-content-between align-items-lg-center gap-3">
 
-            <li v-if="isUser" class="nav-task">
-              <router-link to="/tasks" class="nav-link">
-                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-card-checklist" viewBox="0 0 16 16">
-                  <path d="M14.5 3a.5.5 0 0 1 .5.5v9a.5.5 0 0 1-.5.5h-13a.5.5 0 0 1-.5-.5v-9a.5.5 0 0 1 .5-.5zm-13-1A1.5 1.5 0 0 0 0 3.5v9A1.5 1.5 0 0 0 1.5 14h13a1.5 1.5 0 0 0 1.5-1.5v-9A1.5 1.5 0 0 0 14.5 2z" />
-                  <path d="M7 5.5a.5.5 0 0 1 .5-.5h5a.5.5 0 0 1 0 1h-5a.5.5 0 0 1-.5-.5m-1.496-.854a.5.5 0 0 1 0 .708l-1.5 1.5a.5.5 0 0 1-.708 0l-.5-.5a.5.5 0 1 1 .708-.708l.146.147 1.146-1.147a.5.5 0 0 1 .708 0M7 9.5a.5.5 0 0 1 .5-.5h5a.5.5 0 0 1 0 1h-5a.5.5 0 0 1-.5-.5m-1.496-.854a.5.5 0 0 1 0 .708l-1.5 1.5a.5.5 0 0 1-.708 0l-.5-.5a.5.5 0 0 1 .708-.708l.146.147 1.146-1.147a.5.5 0 0 1 .708 0" />
-                </svg>
-                Tasks
-              </router-link>
-            </li>
+            <div class="d-flex flex-column flex-lg-row gap-3">
 
-            <li v-if="isUser" class="nav-task">
-              <router-link to="/tasks/add" class="nav-link">
-                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-plus-square" viewBox="0 0 16 16">
-                  <path d="M14 1a1 1 0 0 1 1 1v12a1 1 0 0 1-1 1H2a1 1 0 0 1-1-1V2a1 1 0 0 1 1-1zM2 0a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V2a2 2 0 0 0-2-2z"/>
-                  <path d="M8 4a.5.5 0 0 1 .5.5v3h3a.5.5 0 0 1 0 1h-3v3a.5.5 0 0 1-1 0v-3h-3a.5.5 0 0 1 0-1h3v-3A.5.5 0 0 1 8 4"/>
-                </svg>
-              </router-link>
-            </li>
+              <div v-if="isUser || isAdmin || isModerator" class="btn-toolbar" role="toolbar" aria-label="Projekt-Navigation">
+                <div class="btn-group nav-btn-group" role="group" aria-label="Projekt-Bereich">
+                  <router-link to="/projects" class="btn nav-group-btn">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-card-list" viewBox="0 0 16 16">
+                      <path d="M14.5 3a.5.5 0 0 1 .5.5v9a.5.5 0 0 1-.5.5h-13a.5.5 0 0 1-.5-.5v-9a.5.5 0 0 1 .5-.5zm-13-1A1.5 1.5 0 0 0 0 3.5v9A1.5 1.5 0 0 0 1.5 14h13a1.5 1.5 0 0 0 1.5-1.5v-9A1.5 1.5 0 0 0 14.5 2z"/>
+                      <path d="M5 8a.5.5 0 0 1 .5-.5h7a.5.5 0 0 1 0 1h-7A.5.5 0 0 1 5 8m0-2.5a.5.5 0 0 1 .5-.5h7a.5.5 0 0 1 0 1h-7a.5.5 0 0 1-.5-.5m0 5a.5.5 0 0 1 .5-.5h7a.5.5 0 0 1 0 1h-7A.5.5 0 0 1 5 10.5m-1-5a.5.5 0 1 1-1 0 .5.5 0 0 1 1 0M4 8a.5.5 0 1 1-1 0 .5.5 0 0 1 1 0m0 2.5a.5.5 0 1 1-1 0 .5.5 0 0 1 1 0"/>
+                    </svg>
+                    Projekte
+                  </router-link>
 
-            <li v-if="isUser" class="nav-task">
-              <router-link to="/projects/member" class="nav-link">Projects (member)</router-link>
-            </li>
+                  <router-link to="/boards" class="btn nav-group-btn">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-kanban-fill" viewBox="0 0 16 16">
+                      <path d="M2.5 0a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h11a2 2 0 0 0 2-2V2a2 2 0 0 0-2-2zm5 2h1a1 1 0 0 1 1 1v3a1 1 0 0 1-1 1h-1a1 1 0 0 1-1-1V3a1 1 0 0 1 1-1m-5 1a1 1 0 0 1 1-1h1a1 1 0 0 1 1 1v7a1 1 0 0 1-1 1h-1a1 1 0 0 1-1-1zm9-1h1a1 1 0 0 1 1 1v10a1 1 0 0 1-1 1h-1a1 1 0 0 1-1-1V3a1 1 0 0 1 1-1"/>
+                    </svg>
+                    Boards
+                  </router-link>
 
-            <li v-if="isModerator" class="nav-task">
-              <router-link to="/projects" class="nav-link">Projects</router-link>
-            </li>
+                  <router-link to="/projects/member" class="btn nav-group-btn">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-people-fill" viewBox="0 0 16 16">
+                      <path d="M7 14s-1 0-1-1 1-4 5-4 5 3 5 4-1 1-1 1zm4-6a3 3 0 1 0 0-6 3 3 0 0 0 0 6m-5.784 6A2.24 2.24 0 0 1 5 13c0-1.355.68-2.75 1.936-3.72A6.3 6.3 0 0 0 5 9c-4 0-5 3-5 4s1 1 1 1zM4.5 8a2.5 2.5 0 1 0 0-5 2.5 2.5 0 0 0 0 5"/>
+                    </svg>
+                    Mitglieder
+                  </router-link>
+                </div>
+              </div>
 
-            <li v-if="isModerator" class="nav-task">
-              <router-link to="/projects/create" class="nav-link">
-                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-plus-square" viewBox="0 0 16 16">
-                  <path d="M14 1a1 1 0 0 1 1 1v12a1 1 0 0 1-1 1H2a1 1 0 0 1-1-1V2a1 1 0 0 1 1-1zM2 0a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V2a2 2 0 0 0-2-2z"/>
-                  <path d="M8 4a.5.5 0 0 1 .5.5v3h3a.5.5 0 0 1 0 1h-3v3a.5.5 0 0 1-1 0v-3h-3a.5.5 0 0 1 0-1h3v-3A.5.5 0 0 1 8 4"/>
-                </svg>
-              </router-link>
-            </li>
+              <div v-if="isAdmin" class="btn-toolbar" role="toolbar" aria-label="Admin-Navigation">
+                <div class="btn-group nav-btn-group" role="group" aria-label="Admin-Bereich">
+                  <router-link to="/user-management" class="btn nav-group-btn">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-person-fill-add" viewBox="0 0 16 16">
+                      <path d="M12.5 16a3.5 3.5 0 1 0 0-7 3.5 3.5 0 0 0 0 7m.5-5v1h1a.5.5 0 0 1 0 1h-1v1a.5.5 0 0 1-1 0v-1h-1a.5.5 0 0 1 0-1h1v-1a.5.5 0 0 1 1 0m-2-6a3 3 0 1 1-6 0 3 3 0 0 1 6 0"/>
+                      <path d="M2 13c0 1 1 1 1 1h5.256A4.5 4.5 0 0 1 8 12.5a4.5 4.5 0 0 1 1.544-3.393Q8.844 9.002 8 9c-5 0-6 3-6 4"/>
+                    </svg>
+                    Benutzerverwaltung
+                  </router-link>
+                </div>
+              </div>
+            </div>
 
-            <li v-if="isAdmin" class="nav-task">
-              <router-link to="/signup" class="nav-link">Sign up</router-link>
-            </li>
-            <li v-if="isAdmin" class="nav-item">
-              <router-link to="/user-management" class="nav-link">User Management</router-link>
-            </li>
-            <li v-if="!currentUser" class="nav-task">
-              <router-link to="/login" class="nav-link">Log in</router-link>
-            </li>
+            <div class="d-flex flex-column flex-lg-row gap-3 align-items-lg-center">
+              <div v-if="!currentUser" class="btn-toolbar" role="toolbar" aria-label="Authentifizierung">
+                <div class="btn-group nav-btn-group" role="group" aria-label="Login">
+                  <router-link to="/login" class="btn nav-group-btn">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-box-arrow-in-right" viewBox="0 0 16 16">
+                      <path fill-rule="evenodd" d="M6 3.5a.5.5 0 0 1 .5-.5h8a.5.5 0 0 1 .5.5v9a.5.5 0 0 1-.5.5h-8a.5.5 0 0 1-.5-.5v-2a.5.5 0 0 0-1 0v2A1.5 1.5 0 0 0 6.5 14h8A1.5 1.5 0 0 0 16 12.5v-9A1.5 1.5 0 0 0 14.5 2h-8A1.5 1.5 0 0 0 5 3.5v2a.5.5 0 0 0 1 0z"/>
+                      <path fill-rule="evenodd" d="M11.854 8.354a.5.5 0 0 0 0-.708l-3-3a.5.5 0 1 0-.708.708L10.293 7.5H1.5a.5.5 0 0 0 0 1h8.793l-2.147 2.146a.5.5 0 0 0 .708.708z"/>
+                    </svg>
+                    Login
+                  </router-link>
+                </div>
+              </div>
 
-            <li v-if="currentUser" class="nav-task">
-              <router-link to="/profile" class="nav-link">{{ currentUser.username }}´s Profile</router-link>
-            </li>
-            <li v-if="currentUser" class="nav-task">
-              <a class="nav-link" @click.prevent="logOut">Log out</a>
-            </li>
+              <div v-if="currentUser" class="btn-toolbar" role="toolbar" aria-label="Benutzer-Menü">
+                <div
+                    ref="userMenuWrapper"
+                    class="btn-group nav-btn-group user-menu-group"
+                    role="group"
+                    aria-label="Benutzerkonto"
+                >
+                  <button
+                      class="btn nav-group-btn dropdown-toggle"
+                      type="button"
+                      aria-expanded="userMenuOpen ? 'true' : 'false'"
+                      @click="toggleUserMenu"
+                  >
+                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-person-lines-fill" viewBox="0 0 16 16">
+                      <path d="M6 8a3 3 0 1 0 0-6 3 3 0 0 0 0 6m-5 6s-1 0-1-1 1-4 6-4 6 3 6 4-1 1-1 1zM11 3.5a.5.5 0 0 1 .5-.5h4a.5.5 0 0 1 0 1h-4a.5.5 0 0 1-.5-.5m.5 2.5a.5.5 0 0 0 0 1h4a.5.5 0 0 0 0-1zm2 3a.5.5 0 0 0 0 1h2a.5.5 0 0 0 0-1zm0 3a.5.5 0 0 0 0 1h2a.5.5 0 0 0 0-1z"/>
+                    </svg>
+                    Benutzer
+                  </button>
 
-            <li class="nav-task">
-              <router-link to="/about" class="nav-link">About</router-link>
-            </li>
-          </ul>
+                  <ul
+                      class="dropdown-menu dropdown-menu-end"
+                      :class="{ show: userMenuOpen }"
+                  >
+                    <li>
+                      <router-link to="/profile" class="dropdown-item" @click="closeUserMenu">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-person-lines-fill" viewBox="0 0 16 16">
+                          <path d="M6 8a3 3 0 1 0 0-6 3 3 0 0 0 0 6m-5 6s-1 0-1-1 1-4 6-4 6 3 6 4-1 1-1 1zM11 3.5a.5.5 0 0 1 .5-.5h4a.5.5 0 0 1 0 1h-4a.5.5 0 0 1-.5-.5m.5 2.5a.5.5 0 0 0 0 1h4a.5.5 0 0 0 0-1zm2 3a.5.5 0 0 0 0 1h2a.5.5 0 0 0 0-1zm0 3a.5.5 0 0 0 0 1h2a.5.5 0 0 0 0-1z"/>
+                        </svg>
+                        Profil
+                      </router-link>
+                    </li>
+                    <li><hr class="dropdown-divider"></li>
+                    <li>
+                      <button type="button" class="dropdown-item" @click="logOut">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-box-arrow-right" viewBox="0 0 16 16">
+                          <path fill-rule="evenodd" d="M10 12.5a.5.5 0 0 1-.5.5h-8a.5.5 0 0 1-.5-.5v-9a.5.5 0 0 1 .5-.5h8a.5.5 0 0 1 .5.5v2a.5.5 0 0 0 1 0v-2A1.5 1.5 0 0 0 9.5 2h-8A1.5 1.5 0 0 0 0 3.5v9A1.5 1.5 0 0 0 1.5 14h8a1.5 1.5 0 0 0 1.5-1.5v-2a.5.5 0 0 0-1 0z"/>
+                          <path fill-rule="evenodd" d="M15.854 8.354a.5.5 0 0 0 0-.708l-3-3a.5.5 0 0 0-.708.708L14.293 7.5H5.5a.5.5 0 0 0 0 1h8.793l-2.147 2.146a.5.5 0 0 0 .708.708z"/>
+                        </svg>
+                        Logout
+                      </button>
+                    </li>
+                  </ul>
+                </div>
+              </div>
+            </div>
+
+          </div>
         </div>
       </nav>
     </header>
+
     <main id="content" class="container app-content">
-      <router-view></router-view>
+      <router-view />
     </main>
+
     <footer class="bd-footer py-4 py-md-5 mt-5 bg-body-tertiary">
       <div class="container py-4 py-md-5 px-4 px-md-3 text-body-secondary">
-        <p>&copy; <i>ACoSci Tasks App</i> by Gernot Schörner :: <router-link to="/impressum">Impressum</router-link></p>
+        <p>
+          &copy; <i>ACoSci Tasks App</i> by Gernot Schörner
+          ::
+          <router-link to="/about">Über ACoSci Tasks</router-link>
+          ::
+          <router-link to="/impressum">Impressum</router-link>
+        </p>
       </div>
     </footer>
   </div>
 </template>
 
 <script>
-
 export default {
+  data() {
+    return {
+      userMenuOpen: false
+    };
+  },
   computed: {
-    loggedIn() {
-      return this.$store.getters["auth/loggedIn"];
-    },
     currentUser() {
       return this.$store.getters["auth/currentUser"];
     },
@@ -104,13 +167,46 @@ export default {
       return this.$store.getters["auth/isAdmin"];
     }
   },
+  mounted() {
+    document.addEventListener("click", this.handleDocumentClick);
+    document.addEventListener("keydown", this.handleEscapeKey);
+  },
+  beforeUnmount() {
+    document.removeEventListener("click", this.handleDocumentClick);
+    document.removeEventListener("keydown", this.handleEscapeKey);
+  },
   methods: {
+    toggleUserMenu() {
+      this.userMenuOpen = !this.userMenuOpen;
+    },
+    closeUserMenu() {
+      this.userMenuOpen = false;
+    },
+    handleDocumentClick(event) {
+      const wrapper = this.$refs.userMenuWrapper;
+      if (!wrapper) return;
+
+      if (!wrapper.contains(event.target)) {
+        this.closeUserMenu();
+      }
+    },
+    handleEscapeKey(event) {
+      if (event.key === "Escape") {
+        this.closeUserMenu();
+      }
+    },
     logOut() {
+      this.closeUserMenu();
       this.$store.dispatch("auth/logout");
-      this.$router.push('/login');
+      this.$router.push("/login");
+    }
+  },
+  watch: {
+    $route() {
+      this.closeUserMenu();
     }
   }
-}
+};
 </script>
 
 <style>
@@ -138,5 +234,70 @@ html, body {
   background-image: linear-gradient(to bottom, rgb(83, 75, 176), rgba(131, 86, 151, 0.95));
   box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.15), inset 0 -1px 0 rgba(0, 0, 0, 0.15);
   margin-bottom: 50px;
+}
+
+.navbar-brand img {
+  height: 40px;
+  width: auto;
+}
+
+.nav-btn-group {
+  border: 1px solid rgba(255, 255, 255, 0.85);
+  border-radius: 0.375rem;
+  overflow: visible;
+}
+
+.nav-group-btn {
+  color: #fff;
+  background: transparent;
+  border: none;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.45rem;
+  white-space: nowrap;
+  box-shadow: none;
+  text-decoration: none;
+}
+
+.nav-group-btn:hover,
+.nav-group-btn:focus {
+  color: #fff;
+  background-color: rgba(255, 255, 255, 0.15);
+  box-shadow: none;
+}
+
+.nav-group-btn.router-link-active,
+.nav-group-btn.router-link-exact-active {
+  color: #fff;
+  background-color: rgba(255, 255, 255, 0.15);
+  box-shadow: none;
+}
+
+.nav-group-btn + .nav-group-btn {
+  border-left: 1px solid rgba(255, 255, 255, 0.85);
+}
+
+.nav-btn-group .dropdown-toggle::after {
+  margin-left: 0.55rem;
+}
+
+.dropdown-menu .dropdown-item {
+  display: flex;
+  align-items: center;
+  gap: 0.45rem;
+}
+
+.user-menu-group {
+  position: relative;
+}
+
+@media (max-width: 991.98px) {
+  .nav-btn-group {
+    width: 100%;
+  }
+
+  .nav-btn-group .nav-group-btn {
+    justify-content: flex-start;
+  }
 }
 </style>
