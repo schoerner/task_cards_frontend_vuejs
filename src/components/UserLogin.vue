@@ -22,23 +22,24 @@
       </div>
       <div class="row">
         <Form @submit="handleLogin" :validation-schema="schema">
-          <div class="form-group">
+          <div class="form-group mb-3">
             <label for="email">E-Mail</label>
             <Field name="email" type="text" class="form-control"/>
             <ErrorMessage name="email" class="error-feedback"/>
           </div>
-          <div class="form-group">
+
+          <div class="form-group mb-3">
             <label for="password">Password</label>
             <Field name="password" type="password" class="form-control"/>
             <ErrorMessage name="password" class="error-feedback"/>
           </div>
 
-          <div class="form-group">
+          <div class="form-group mt-4">
             <button class="btn btn-primary btn-block" :disabled="loading">
-                    <span
-                        v-show="loading"
-                        class="spinner-border spinner-border-sm"
-                    ></span>
+              <span
+                  v-show="loading"
+                  class="spinner-border spinner-border-sm"
+              ></span>
               <span>Login</span>
             </button>
           </div>
