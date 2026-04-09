@@ -12,12 +12,6 @@
         <button class="btn btn-outline-secondary" @click="reloadBoard" :disabled="loading">
           Neu laden
         </button>
-        <button class="btn btn-outline-primary" @click="openCreateTaskModal()" :disabled="!selectedProjectId">
-          + Task
-        </button>
-        <button class="btn btn-primary" @click="openCreateColumnModal" :disabled="!selectedProjectId || !canManageBoard">
-          + Spalte
-        </button>
       </div>
     </div>
 
@@ -47,18 +41,39 @@
                 {{ project.name }}
               </option>
             </select>
+
+            <div class="mt-2">
+              <button class="btn btn-success btn-sm" @click="openCreateProjectModal">
+                + Projekt
+              </button>
+            </div>
           </div>
 
           <div class="col-md-4">
             <div v-if="selectedProject" class="border rounded p-3 bg-light">
-              <div class="fw-semibold">{{ selectedProject.name }}</div>
-              <div class="small text-muted">
-                Eigene Rolle:
-                <span class="badge ms-1" :class="roleBadgeClass(currentUserRole)">
-                  {{ currentUserRole || 'UNBEKANNT' }}
-                </span>
+              <div class="d-flex justify-content-between align-items-start gap-2">
+                <div>
+                  <div class="fw-semibold">{{ selectedProject.name }}</div>
+                  <div class="small text-muted">
+                    Eigene Rolle:
+                    <span class="badge ms-1" :class="roleBadgeClass(currentUserRole)">
+                      {{ currentUserRole || 'UNBEKANNT' }}
+                    </span>
+                  </div>
+                </div>
+
+                <button
+                    v-if="canManageBoard"
+                    class="btn btn-sm btn-outline-secondary"
+                    type="button"
+                    title="Projekt bearbeiten"
+                    @click="openEditProjectModal"
+                >
+                  <i class="bi bi-pencil-fill"></i>
+                </button>
               </div>
             </div>
+
           </div>
         </div>
       </div>
@@ -164,6 +179,23 @@
               </div>
             </div>
           </div>
+          <div
+              v-if="canManageBoard"
+              class="board-column board-column-add"
+          >
+            <div
+                class="card shadow-sm h-100 add-column-card"
+                role="button"
+                tabindex="0"
+                @click="openCreateColumnModal"
+                @keydown.enter.prevent="openCreateColumnModal"
+                @keydown.space.prevent="openCreateColumnModal"
+            >
+              <div class="card-body d-flex align-items-center justify-content-center">
+                <span class="add-column-plus">+</span>
+              </div>
+            </div>
+          </div>
         </div>
       </div>
     </div>
@@ -171,6 +203,22 @@
     <div v-else-if="!loading" class="alert alert-info">
       Bitte zuerst ein Projekt auswählen.
     </div>
+
+
+    <create-project
+        ref="createProjectModal"
+        modal-id="boardsCreateProjectModal"
+        @created-project="handleProjectCreated"
+    />
+
+    <edit-project
+        v-if="selectedProject"
+        ref="editProjectModal"
+        :project="selectedProject"
+        modal-id="boardsEditProjectModal"
+        @saved-edit="handleProjectUpdated"
+        @deleted-project="handleProjectDeleted"
+    />
 
     <task-details-modal
         ref="taskDetailsModal"
@@ -210,11 +258,21 @@
                 </div>
 
                 <div class="col-md-4">
+                  <label class="form-label">Start</label>
+                  <input v-model="createTaskForm.startAt" type="datetime-local" class="form-control">
+                </div>
+
+                <div class="col-md-4">
                   <label class="form-label">Fällig bis</label>
                   <input v-model="createTaskForm.dueDate" type="datetime-local" class="form-control">
                 </div>
 
-                <div class="col-md-4">
+                <div class="col-md-6">
+                  <label class="form-label">Ort</label>
+                  <input v-model.trim="createTaskForm.location" type="text" class="form-control" maxlength="255">
+                </div>
+
+                <div class="col-md-6">
                   <label class="form-label">Schätzung (Min.)</label>
                   <input v-model.number="createTaskForm.estimatedMinutes" type="number" min="0" class="form-control">
                 </div>
@@ -227,6 +285,50 @@
                       {{ column.name }}
                     </option>
                   </select>
+                </div>
+
+                <div class="col-12">
+                  <label class="form-label">Erinnerungen</label>
+
+                  <div
+                      v-for="(reminder, index) in createTaskForm.calendarReminders"
+                      :key="index"
+                      class="row g-2 align-items-end mb-2"
+                  >
+                    <div class="col-md-3">
+                      <label class="form-label small">Minuten vorher</label>
+                      <input
+                          v-model.number="reminder.minutesBefore"
+                          type="number"
+                          min="0"
+                          class="form-control"
+                      >
+                    </div>
+
+                    <div class="col-md-7">
+                      <label class="form-label small">Nachricht</label>
+                      <input
+                          v-model.trim="reminder.message"
+                          type="text"
+                          class="form-control"
+                          maxlength="1000"
+                      >
+                    </div>
+
+                    <div class="col-md-2">
+                      <button
+                          type="button"
+                          class="btn btn-outline-danger w-100"
+                          @click="removeCreateReminder(index)"
+                      >
+                        Entfernen
+                      </button>
+                    </div>
+                  </div>
+
+                  <button type="button" class="btn btn-outline-secondary btn-sm" @click="addCreateReminder">
+                    + Erinnerung
+                  </button>
                 </div>
               </div>
 
@@ -362,6 +464,8 @@
 
 <script>
 import { Modal } from 'bootstrap';
+import CreateProject from '@/components/CreateProject.vue';
+import EditProject from '@/components/EditProject.vue';
 import ProjectService from '@/services/project.service.js';
 import ProjectMemberService from '@/services/project-member.service.js';
 import BoardColumnService from '@/services/board-column.service.js';
@@ -373,7 +477,9 @@ export default {
   name: 'Boards',
   components: {
     TaskBoardCard,
-    TaskDetailsModal
+    TaskDetailsModal,
+    CreateProject,
+    EditProject
   },
   data() {
     return {
@@ -389,6 +495,7 @@ export default {
       tasks: [],
       selectedProjectId: null,
 
+
       draggedTaskId: null,
       hoveredTaskColumnId: null,
 
@@ -403,9 +510,12 @@ export default {
         title: '',
         description: '',
         priority: 'MEDIUM',
+        startAt: '',
         dueDate: '',
+        location: '',
         estimatedMinutes: 0,
-        boardColumnId: null
+        boardColumnId: null,
+        calendarReminders: []
       },
       createColumnForm: {
         name: '',
@@ -513,6 +623,55 @@ export default {
       }
     },
 
+    openCreateProjectModal() {
+      this.$refs.createProjectModal?.show();
+    },
+
+    openEditProjectModal() {
+      this.$refs.editProjectModal?.show();
+    },
+
+    async handleProjectCreated(createdProject) {
+      this.statusMessage = 'Projekt wurde erfolgreich angelegt.';
+      await this.loadProjects();
+
+      if (createdProject?.id) {
+        this.selectedProjectId = Number(createdProject.id);
+        this.$router.replace({
+          path: '/boards',
+          query: { projectId: this.selectedProjectId }
+        });
+      }
+
+      await this.reloadBoard();
+    },
+
+    async handleProjectUpdated(updatedProject) {
+      this.statusMessage = 'Projekt wurde aktualisiert.';
+      await this.loadProjects();
+
+      if (updatedProject?.id) {
+        this.selectedProjectId = Number(updatedProject.id);
+      }
+
+      await this.reloadBoard();
+    },
+
+    async handleProjectDeleted(deletedProjectId) {
+      this.statusMessage = 'Projekt wurde gelöscht.';
+      await this.loadProjects();
+
+      if (Number(this.selectedProjectId) === Number(deletedProjectId)) {
+        this.selectedProjectId = this.activeProjects[0]?.id ?? null;
+        this.$router.replace({
+          path: '/boards',
+          query: this.selectedProjectId ? { projectId: this.selectedProjectId } : {}
+        });
+      }
+
+      await this.reloadBoard();
+    },
+
     getTaskColumnId(task) {
       return Number(task?.boardColumnId ?? task?.boardColumn?.id ?? null);
     },
@@ -531,7 +690,7 @@ export default {
     },
 
     async openTaskDetails(task) {
-      await this.$refs.taskDetailsModal.open(task.id);
+      await this.$refs.taskDetailsModal.open(task);
     },
 
     roleBadgeClass(role) {
@@ -681,18 +840,21 @@ export default {
       }
 
       const [movedColumn] = reordered.splice(sourceIndex, 1);
-      const adjustedTargetIndex = reordered.findIndex(column => Number(column.id) === Number(targetColumnId));
+
+      let adjustedTargetIndex = reordered.findIndex(
+          column => Number(column.id) === Number(targetColumnId)
+      );
+
+      if (sourceIndex < targetIndex) {
+        adjustedTargetIndex += 1;
+      }
+
       reordered.splice(adjustedTargetIndex, 0, movedColumn);
 
       try {
-        await Promise.all(
-            reordered.map((column, index) =>
-                BoardColumnService.updateColumn(this.selectedProjectId, column.id, {
-                  name: column.name,
-                  position: index
-                })
-            )
-        );
+        await BoardColumnService.reorderColumns(this.selectedProjectId, {
+          orderedColumnIds: reordered.map(column => column.id)
+        });
 
         this.statusMessage = 'Spalten wurden neu angeordnet.';
         await this.reloadBoard();
@@ -713,14 +875,29 @@ export default {
       await this.handleTaskDrop(targetColumnId, event);
     },
 
+    addCreateReminder() {
+      this.createTaskForm.calendarReminders.push({
+        minutesBefore: 15,
+        actionType: 'DISPLAY',
+        message: ''
+      });
+    },
+
+    removeCreateReminder(index) {
+      this.createTaskForm.calendarReminders.splice(index, 1);
+    },
+
     openCreateTaskModal(columnId = null) {
       this.createTaskForm = {
         title: '',
         description: '',
         priority: 'MEDIUM',
+        startAt: '',
         dueDate: '',
+        location: '',
         estimatedMinutes: 0,
-        boardColumnId: columnId ? Number(columnId) : null
+        boardColumnId: columnId ? Number(columnId) : null,
+        calendarReminders: []
       };
       this.modalErrorMessage = '';
       this.createTaskModal.show();
@@ -742,8 +919,15 @@ export default {
           title: this.createTaskForm.title,
           description: this.createTaskForm.description || null,
           priority: this.createTaskForm.priority,
+          startAt: this.createTaskForm.startAt ? new Date(this.createTaskForm.startAt).toISOString() : null,
           dueDate: this.createTaskForm.dueDate ? new Date(this.createTaskForm.dueDate).toISOString() : null,
+          location: this.createTaskForm.location || null,
           estimatedMinutes: Number(this.createTaskForm.estimatedMinutes || 0),
+          calendarReminders: (this.createTaskForm.calendarReminders || []).map(reminder => ({
+            minutesBefore: Number(reminder.minutesBefore || 0),
+            actionType: reminder.actionType || 'DISPLAY',
+            message: reminder.message || null
+          })),
           assigneeIds: [],
           labelIds: []
         });
@@ -906,6 +1090,45 @@ export default {
   width: 360px;
   min-width: 360px;
   transition: transform 0.12s ease;
+}
+
+.board-column-add {
+  width: 96px;
+  min-width: 96px;
+  display: flex;
+}
+
+.add-column-card {
+  width: 100%;
+  min-height: 220px;
+  border: 2px dashed #ced4da;
+  background: #f8f9fa;
+  cursor: pointer;
+  transition: border-color 0.15s ease, background-color 0.15s ease, transform 0.15s ease, box-shadow 0.15s ease;
+}
+
+.add-column-card:hover,
+.add-column-card:focus {
+  border-color: var(--bs-primary);
+  background: #eef5ff;
+  box-shadow: 0 0.25rem 0.75rem rgba(13, 110, 253, 0.12);
+  transform: translateY(-1px);
+  outline: none;
+}
+
+.add-column-plus {
+  font-size: 3rem;
+  line-height: 1;
+  font-weight: 300;
+  color: #adb5bd;
+  user-select: none;
+  transition: color 0.15s ease, transform 0.15s ease;
+}
+
+.add-column-card:hover .add-column-plus,
+.add-column-card:focus .add-column-plus {
+  color: var(--bs-primary);
+  transform: scale(1.05);
 }
 
 .board-column .card {

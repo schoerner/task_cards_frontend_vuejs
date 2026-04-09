@@ -73,12 +73,16 @@ class TaskService {
         return axios.post(`${API_URL}/${taskId}/time-tracking/stop`, {}, { headers: authHeader() });
     }
 
-    startTask(taskId) {
-        return this.startTimeTracking(taskId);
+    getMyCalendarTasks() {
+        return axios.get(`${TaskAppConfig.baseUrl()}/calendar/tasks`, { headers: authHeader() });
     }
 
-    stopTask(taskId) {
-        return this.stopTimeTracking(taskId);
+    getCalendarFeedLink() {
+        return axios.get(`${TaskAppConfig.baseUrl()}/calendar/feed-link`, { headers: authHeader() });
+    }
+
+    regenerateCalendarFeedLink() {
+        return axios.post(`${TaskAppConfig.baseUrl()}/calendar/feed-link/regenerate`, {}, { headers: authHeader() });
     }
 }
 

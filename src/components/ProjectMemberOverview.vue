@@ -88,9 +88,9 @@
               <td>{{ member.email }}</td>
               <td>{{ fullName(member) }}</td>
               <td>
-    <span class="badge" :class="roleBadgeClass(member.role)">
-      {{ member.role }}
-    </span>
+                <span class="badge" :class="roleBadgeClass(member.role)">
+                  {{ member.role }}
+                </span>
               </td>
               <td>{{ formatDate(member.joinedAt) }}</td>
               <td class="text-end">
@@ -137,15 +137,46 @@
             </div>
             <div class="modal-body">
               <div class="mb-3">
-                <label class="form-label" for="userIdInput">Benutzer-ID</label>
+                <label class="form-label" for="memberSearchInput">Profil suchen</label>
                 <input
-                    id="userIdInput"
-                    v-model.number="addForm.userId"
-                    type="number"
-                    min="1"
+                    id="memberSearchInput"
+                    v-model.trim="memberSearchQuery"
+                    type="text"
                     class="form-control"
-                    required
+                    placeholder="Anzeigename oder Kontakt-E-Mail"
+                    @input="onMemberSearchInput"
+                    autocomplete="off"
                 />
+                <div class="form-text">
+                  Es werden ausschließlich UserProfile-Felder durchsucht.
+                </div>
+              </div>
+
+              <div v-if="searchingCandidates" class="small text-muted mb-3">
+                Profile werden gesucht...
+              </div>
+
+              <div v-if="candidateResults.length > 0" class="list-group mb-3">
+                <button
+                    v-for="candidate in candidateResults"
+                    :key="candidate.userId"
+                    type="button"
+                    class="list-group-item list-group-item-action"
+                    @click="selectCandidate(candidate)"
+                >
+                  <div class="fw-semibold">{{ candidate.name || 'Ohne Anzeigename' }}</div>
+                  <div class="small text-muted">{{ candidate.contactEmail || 'Keine Kontakt-E-Mail' }}</div>
+                </button>
+              </div>
+
+              <div v-else-if="memberSearchQuery && !searchingCandidates" class="text-muted small mb-3">
+                Keine passenden Profile gefunden.
+              </div>
+
+              <div v-if="selectedCandidate" class="border rounded p-3 bg-light mb-3">
+                <div class="small text-muted mb-1">Ausgewähltes Profil</div>
+                <div class="fw-semibold">{{ selectedCandidate.name || 'Ohne Anzeigename' }}</div>
+                <div class="small text-muted">{{ selectedCandidate.contactEmail || 'Keine Kontakt-E-Mail' }}</div>
               </div>
 
               <div class="mb-3">
@@ -166,7 +197,7 @@
               <button type="button" class="btn btn-secondary" @click="hideAddMemberModal">
                 Abbrechen
               </button>
-              <button type="submit" class="btn btn-primary" :disabled="saving">
+              <button type="submit" class="btn btn-primary" :disabled="saving || !addForm.userId">
                 {{ saving ? 'Speichert...' : 'Hinzufügen' }}
               </button>
             </div>
@@ -197,6 +228,11 @@ export default {
       sortBy: 'id',
       sortDesc: false,
       addMemberModal: null,
+      memberSearchQuery: '',
+      candidateResults: [],
+      searchingCandidates: false,
+      selectedCandidate: null,
+      memberSearchTimeout: null,
       addForm: {
         userId: null,
         role: 'MEMBER'
@@ -246,6 +282,11 @@ export default {
     if (routeProjectId && this.activeProjects.some(project => Number(project.id) === Number(routeProjectId))) {
       this.selectedProjectId = Number(routeProjectId);
       await this.loadMembers();
+    }
+  },
+  beforeUnmount() {
+    if (this.memberSearchTimeout) {
+      clearTimeout(this.memberSearchTimeout);
     }
   },
   methods: {
@@ -349,16 +390,72 @@ export default {
         userId: null,
         role: 'MEMBER'
       };
+      this.memberSearchQuery = '';
+      this.candidateResults = [];
+      this.searchingCandidates = false;
+      this.selectedCandidate = null;
       this.modalErrorMessage = '';
       this.addMemberModal.show();
     },
 
     hideAddMemberModal() {
       this.modalErrorMessage = '';
+      this.memberSearchQuery = '';
+      this.candidateResults = [];
+      this.searchingCandidates = false;
+      this.selectedCandidate = null;
       this.addMemberModal.hide();
     },
 
+    onMemberSearchInput() {
+      this.addForm.userId = null;
+      this.selectedCandidate = null;
+      this.modalErrorMessage = '';
+
+      if (this.memberSearchTimeout) {
+        clearTimeout(this.memberSearchTimeout);
+      }
+
+      if (!this.memberSearchQuery || !this.selectedProjectId) {
+        this.candidateResults = [];
+        return;
+      }
+
+      this.memberSearchTimeout = setTimeout(() => {
+        this.searchMemberCandidates();
+      }, 250);
+    },
+
+    async searchMemberCandidates() {
+      this.searchingCandidates = true;
+
+      try {
+        const response = await ProjectMemberService.searchMemberCandidates(
+            this.selectedProjectId,
+            this.memberSearchQuery
+        );
+        this.candidateResults = response.data || [];
+      } catch (error) {
+        this.candidateResults = [];
+        this.modalErrorMessage = this.extractErrorMessage(error, 'Profile konnten nicht gesucht werden.');
+      } finally {
+        this.searchingCandidates = false;
+      }
+    },
+
+    selectCandidate(candidate) {
+      this.selectedCandidate = candidate;
+      this.addForm.userId = Number(candidate.userId);
+      this.memberSearchQuery = candidate.name || candidate.contactEmail || '';
+      this.candidateResults = [];
+    },
+
     async addMember() {
+      if (!this.addForm.userId) {
+        this.modalErrorMessage = 'Bitte zuerst ein Profil auswählen.';
+        return;
+      }
+
       this.saving = true;
       this.modalErrorMessage = '';
 

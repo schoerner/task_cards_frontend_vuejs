@@ -140,167 +140,46 @@
       </table>
     </div>
 
-    <!-- Create Project Modal -->
-    <div class="modal fade" id="createProjectModal" tabindex="-1" aria-hidden="true">
-      <div class="modal-dialog">
-        <div class="modal-content">
-          <form @submit.prevent="createProject">
-            <div class="modal-header">
-              <h5 class="modal-title">Projekt anlegen</h5>
-              <button type="button" class="btn-close" @click="hideCreateProjectModal"></button>
-            </div>
+    <create-project
+        ref="createProjectModal"
+        modal-id="projectsCreateProjectModal"
+        @created-project="handleProjectCreated"
+    />
 
-            <div class="modal-body">
-              <div class="mb-3">
-                <label for="createProjectName" class="form-label">Name</label>
-                <input
-                    id="createProjectName"
-                    ref="createProjectNameInput"
-                    v-model.trim="createForm.name"
-                    type="text"
-                    class="form-control"
-                    required
-                />
-              </div>
-
-              <div class="mb-3">
-                <label for="createProjectDescription" class="form-label">Beschreibung</label>
-                <textarea
-                    id="createProjectDescription"
-                    v-model.trim="createForm.description"
-                    class="form-control"
-                    rows="4"
-                ></textarea>
-              </div>
-
-              <div v-if="modalErrorMessage" class="alert alert-danger mb-0">
-                {{ modalErrorMessage }}
-              </div>
-            </div>
-
-            <div class="modal-footer">
-              <button type="button" class="btn btn-secondary" @click="hideCreateProjectModal">
-                Abbrechen
-              </button>
-              <button type="submit" class="btn btn-primary" :disabled="saving">
-                {{ saving ? 'Speichert...' : 'Projekt anlegen' }}
-              </button>
-            </div>
-          </form>
-        </div>
-      </div>
-    </div>
-
-    <!-- Edit Project Modal -->
-    <div class="modal fade" id="editProjectModal" tabindex="-1" aria-hidden="true">
-      <div class="modal-dialog">
-        <div class="modal-content">
-          <form v-if="editForm.id" @submit.prevent="saveProject">
-            <div class="modal-header">
-              <h5 class="modal-title">Projekt bearbeiten</h5>
-              <button type="button" class="btn-close" @click="hideEditProjectModal"></button>
-            </div>
-
-            <div class="modal-body">
-              <div class="mb-3">
-                <label for="editProjectName" class="form-label">Name</label>
-                <input
-                    id="editProjectName"
-                    ref="editProjectNameInput"
-                    v-model.trim="editForm.name"
-                    type="text"
-                    class="form-control"
-                    required
-                />
-              </div>
-
-              <div class="mb-3">
-                <label for="editProjectDescription" class="form-label">Beschreibung</label>
-                <textarea
-                    id="editProjectDescription"
-                    v-model.trim="editForm.description"
-                    class="form-control"
-                    rows="4"
-                ></textarea>
-              </div>
-
-              <div class="form-check mb-3">
-                <input
-                    id="editProjectArchived"
-                    v-model="editForm.archived"
-                    class="form-check-input"
-                    type="checkbox"
-                />
-                <label class="form-check-label" for="editProjectArchived">
-                  Projekt archiviert
-                </label>
-              </div>
-
-              <div v-if="modalErrorMessage" class="alert alert-danger mb-0">
-                {{ modalErrorMessage }}
-              </div>
-            </div>
-
-            <div class="modal-footer">
-              <button type="button" class="btn btn-secondary" @click="hideEditProjectModal">
-                Abbrechen
-              </button>
-              <button type="submit" class="btn btn-primary" :disabled="saving">
-                {{ saving ? 'Speichert...' : 'Änderungen speichern' }}
-              </button>
-            </div>
-          </form>
-        </div>
-      </div>
-    </div>
-
-    <!-- Delete Confirm Modal -->
-    <div class="modal fade" id="deleteConfirmModal" tabindex="-1" aria-hidden="true">
-      <div class="modal-dialog modal-dialog-centered">
-        <div class="modal-content">
-          <div class="modal-header bg-danger text-white">
-            <h5 class="modal-title">Projekt löschen</h5>
-            <button type="button" class="btn-close" @click="hideDeleteConfirmModal"></button>
-          </div>
-          <div class="modal-body">
-            <p>Möchtest du dieses Projekt wirklich löschen?</p>
-            <strong>{{ projectToDelete?.name }}</strong>
-          </div>
-          <div class="modal-footer">
-            <button class="btn btn-secondary" @click="hideDeleteConfirmModal">Abbrechen</button>
-            <button class="btn btn-danger" @click="deleteConfirmed">Ja, löschen</button>
-          </div>
-        </div>
-      </div>
-    </div>
+    <edit-project
+        v-if="selectedProjectForEdit"
+        ref="editProjectModal"
+        :project="selectedProjectForEdit"
+        modal-id="projectsEditProjectModal"
+        @saved-edit="handleProjectUpdated"
+        @deleted-project="handleProjectDeleted"
+    />
   </div>
 </template>
 
 <script>
-import { Modal } from 'bootstrap';
+import CreateProject from '@/components/CreateProject.vue';
+import EditProject from '@/components/EditProject.vue';
 import ProjectService from '@/services/project.service.js';
 import ProjectMemberService from '@/services/project-member.service.js';
 
 export default {
   name: 'MyOwnedProjectManager',
+  components: {
+    CreateProject,
+    EditProject
+  },
   data() {
     return {
       loading: false,
-      saving: false,
       projects: [],
       filterText: '',
       archiveFilter: 'active',
       sortBy: 'id',
       sortDesc: false,
       errorMessage: '',
-      modalErrorMessage: '',
       statusMessage: '',
-      projectToDelete: null,
-      createProjectModal: null,
-      editProjectModal: null,
-      deleteConfirmModal: null,
-      createForm: this.getEmptyCreateForm(),
-      editForm: this.getEmptyEditForm()
+      selectedProjectForEdit: null
     };
   },
   computed: {
@@ -352,28 +231,9 @@ export default {
     }
   },
   async mounted() {
-    this.createProjectModal = new Modal(document.getElementById('createProjectModal'));
-    this.editProjectModal = new Modal(document.getElementById('editProjectModal'));
-    this.deleteConfirmModal = new Modal(document.getElementById('deleteConfirmModal'));
-
     await this.loadProjectsAndRoles();
   },
   methods: {
-    getEmptyCreateForm() {
-      return {
-        name: '',
-        description: ''
-      };
-    },
-
-    getEmptyEditForm() {
-      return {
-        id: null,
-        name: '',
-        description: '',
-        archived: false
-      };
-    },
 
     toggleSortDirection() {
       this.sortDesc = !this.sortDesc;
@@ -393,7 +253,7 @@ export default {
                 const membersResponse = await ProjectMemberService.getMembers(project.id);
                 const members = membersResponse.data || [];
                 const ownMembership = members.find(
-                    member => Number(member.user?.id) === Number(this.currentUser?.id)
+                    member => Number(member.userId) === Number(this.currentUser?.id)
                 );
 
                 return {
@@ -448,127 +308,62 @@ export default {
     },
 
     openCreateProjectModal() {
-      this.createForm = this.getEmptyCreateForm();
-      this.modalErrorMessage = '';
-      this.createProjectModal.show();
-
-      this.$nextTick(() => {
-        this.$refs.createProjectNameInput?.focus();
-      });
-    },
-
-    hideCreateProjectModal() {
-      this.modalErrorMessage = '';
-      this.createProjectModal.hide();
-    },
-
-    async createProject() {
-      this.saving = true;
-      this.modalErrorMessage = '';
-
-      try {
-        const payload = {
-          name: this.createForm.name,
-          description: this.createForm.description || null
-        };
-
-        await ProjectService.createProject(payload);
-        this.hideCreateProjectModal();
-        this.statusMessage = 'Projekt wurde erfolgreich angelegt.';
-        await this.loadProjectsAndRoles();
-      } catch (error) {
-        this.modalErrorMessage = this.extractErrorMessage(error, 'Fehler beim Anlegen des Projekts.');
-      } finally {
-        this.saving = false;
-      }
+      this.$refs.createProjectModal?.show();
     },
 
     openEditProjectModal(project) {
-      this.editForm = {
-        id: project.id,
-        name: project.name || '',
-        description: project.description || '',
-        archived: !!project.archived
-      };
-
-      this.modalErrorMessage = '';
-      this.editProjectModal.show();
-
+      this.selectedProjectForEdit = { ...project };
       this.$nextTick(() => {
-        this.$refs.editProjectNameInput?.focus();
+        this.$refs.editProjectModal?.show();
       });
     },
 
-    hideEditProjectModal() {
-      this.modalErrorMessage = '';
-      this.editProjectModal.hide();
-      this.editForm = this.getEmptyEditForm();
+    async handleProjectCreated(createdProject) {
+      this.statusMessage = 'Projekt wurde erfolgreich angelegt.';
+      await this.loadProjectsAndRoles();
+
+      if (createdProject?.id) {
+        this.$router.push({
+          path: '/boards',
+          query: { projectId: createdProject.id }
+        });
+      }
     },
 
-    async saveProject() {
-      if (!this.editForm.id) {
-        return;
-      }
+    async handleProjectUpdated() {
+      this.statusMessage = 'Projekt wurde erfolgreich aktualisiert.';
+      await this.loadProjectsAndRoles();
+    },
 
-      this.saving = true;
-      this.modalErrorMessage = '';
+    async handleProjectDeleted(deletedProjectId) {
+      this.statusMessage = 'Projekt wurde gelöscht.';
+      this.selectedProjectForEdit = null;
+      await this.loadProjectsAndRoles();
 
-      try {
-        const payload = {
-          name: this.editForm.name,
-          description: this.editForm.description || null,
-          archived: !!this.editForm.archived
-        };
-
-        await ProjectService.updateProject(this.editForm.id, payload);
-        this.hideEditProjectModal();
-        this.statusMessage = 'Projekt wurde erfolgreich aktualisiert.';
-        await this.loadProjectsAndRoles();
-      } catch (error) {
-        this.modalErrorMessage = this.extractErrorMessage(error, 'Fehler beim Speichern des Projekts.');
-      } finally {
-        this.saving = false;
+      if (this.$route?.query?.projectId && Number(this.$route.query.projectId) === Number(deletedProjectId)) {
+        this.$router.replace({ path: '/projects' });
       }
     },
 
     async archiveProject(project) {
-      try {
-        await ProjectService.archiveProject(project.id);
-        this.statusMessage = `Projekt "${project.name}" wurde archiviert.`;
-        await this.loadProjectsAndRoles();
-      } catch (error) {
-        this.errorMessage = this.extractErrorMessage(error, 'Fehler beim Archivieren des Projekts.');
-      }
+      this.selectedProjectForEdit = { ...project, archived: true };
+      this.$nextTick(() => {
+        this.$refs.editProjectModal?.show();
+      });
     },
 
     confirmDelete(project) {
-      this.projectToDelete = project;
-      this.deleteConfirmModal.show();
-    },
-
-    hideDeleteConfirmModal() {
-      this.deleteConfirmModal.hide();
-      this.projectToDelete = null;
-    },
-
-    async deleteConfirmed() {
-      if (!this.projectToDelete?.id) {
-        return;
-      }
-
-      try {
-        await ProjectService.deleteProject(this.projectToDelete.id);
-        this.statusMessage = `Projekt "${this.projectToDelete.name}" wurde gelöscht.`;
-        this.hideDeleteConfirmModal();
-        await this.loadProjectsAndRoles();
-      } catch (error) {
-        this.errorMessage = this.extractErrorMessage(error, 'Fehler beim Löschen des Projekts.');
-      }
+      this.selectedProjectForEdit = { ...project };
+      this.$nextTick(() => {
+        this.$refs.editProjectModal?.show();
+      });
     },
 
     extractErrorMessage(error, fallbackMessage) {
-      return error?.response?.data?.message
-          || error?.response?.data
+      return error?.response?.data?.detail
+          || error?.response?.data?.message
+          || error?.response?.data?.title
+          || (typeof error?.response?.data === 'string' ? error.response.data : null)
           || error?.message
           || fallbackMessage;
     }

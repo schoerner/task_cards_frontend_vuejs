@@ -27,6 +27,21 @@
 
               <div v-if="isUser || isAdmin || isModerator" class="btn-toolbar" role="toolbar" aria-label="Projekt-Navigation">
                 <div class="btn-group nav-btn-group" role="group" aria-label="Projekt-Bereich">
+                  <router-link to="/boards" class="btn nav-group-btn">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-kanban-fill" viewBox="0 0 16 16">
+                      <path d="M2.5 0a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h11a2 2 0 0 0 2-2V2a2 2 0 0 0-2-2zm5 2h1a1 1 0 0 1 1 1v3a1 1 0 0 1-1 1h-1a1 1 0 0 1-1-1V3a1 1 0 0 1 1-1m-5 1a1 1 0 0 1 1-1h1a1 1 0 0 1 1 1v7a1 1 0 0 1-1 1h-1a1 1 0 0 1-1-1zm9-1h1a1 1 0 0 1 1 1v10a1 1 0 0 1-1 1h-1a1 1 0 0 1-1-1V3a1 1 0 0 1 1-1"/>
+                    </svg>
+                    Boards
+                  </router-link>
+
+                  <router-link to="/calendar" class="btn nav-group-btn">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-calendar3" viewBox="0 0 16 16">
+                      <path d="M14 0a1 1 0 0 1 1 1v1h-1V1H2v1H1V1a1 1 0 0 1 1-1h1v1a1 1 0 1 0 2 0V0h6v1a1 1 0 1 0 2 0V0z"/>
+                      <path d="M1 3h14v11a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2zm2 2v2h2V5zm3 0v2h2V5zm3 0v2h2V5zm3 0v2h2V5zM3 8v2h2V8zm3 0v2h2V8zm3 0v2h2V8zm-6 3v2h2v-2zm3 0v2h2v-2z"/>
+                    </svg>
+                    Kalender
+                  </router-link>
+
                   <router-link to="/projects" class="btn nav-group-btn">
                     <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-card-list" viewBox="0 0 16 16">
                       <path d="M14.5 3a.5.5 0 0 1 .5.5v9a.5.5 0 0 1-.5.5h-13a.5.5 0 0 1-.5-.5v-9a.5.5 0 0 1 .5-.5zm-13-1A1.5 1.5 0 0 0 0 3.5v9A1.5 1.5 0 0 0 1.5 14h13a1.5 1.5 0 0 0 1.5-1.5v-9A1.5 1.5 0 0 0 14.5 2z"/>
@@ -35,18 +50,22 @@
                     Projekte
                   </router-link>
 
-                  <router-link to="/boards" class="btn nav-group-btn">
-                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-kanban-fill" viewBox="0 0 16 16">
-                      <path d="M2.5 0a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h11a2 2 0 0 0 2-2V2a2 2 0 0 0-2-2zm5 2h1a1 1 0 0 1 1 1v3a1 1 0 0 1-1 1h-1a1 1 0 0 1-1-1V3a1 1 0 0 1 1-1m-5 1a1 1 0 0 1 1-1h1a1 1 0 0 1 1 1v7a1 1 0 0 1-1 1h-1a1 1 0 0 1-1-1zm9-1h1a1 1 0 0 1 1 1v10a1 1 0 0 1-1 1h-1a1 1 0 0 1-1-1V3a1 1 0 0 1 1-1"/>
-                    </svg>
-                    Boards
-                  </router-link>
-
                   <router-link to="/projects/member" class="btn nav-group-btn">
                     <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-people-fill" viewBox="0 0 16 16">
                       <path d="M7 14s-1 0-1-1 1-4 5-4 5 3 5 4-1 1-1 1zm4-6a3 3 0 1 0 0-6 3 3 0 0 0 0 6m-5.784 6A2.24 2.24 0 0 1 5 13c0-1.355.68-2.75 1.936-3.72A6.3 6.3 0 0 0 5 9c-4 0-5 3-5 4s1 1 1 1zM4.5 8a2.5 2.5 0 1 0 0-5 2.5 2.5 0 0 0 0 5"/>
                     </svg>
                     Mitglieder
+                  </router-link>
+                </div>
+              </div>
+
+              <div v-if="isUser || isAdmin || isModerator" class="btn-toolbar" role="toolbar" aria-label="Benutzersuche-Navigation">
+                <div class="btn-group nav-btn-group" role="group" aria-label="Benutzersuche-Bereich">
+                  <router-link to="/user_profiles" class="btn nav-group-btn">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-search" viewBox="0 0 16 16">
+                      <path d="M11.742 10.344a6.5 6.5 0 1 0-1.397 1.398h-.001q.044.06.098.115l3.85 3.85a1 1 0 0 0 1.415-1.414l-3.85-3.85a1 1 0 0 0-.115-.1zM12 6.5a5.5 5.5 0 1 1-11 0 5.5 5.5 0 0 1 11 0"/>
+                    </svg>
+                    Benutzersuche
                   </router-link>
                 </div>
               </div>
@@ -87,7 +106,7 @@
                   <button
                       class="btn nav-group-btn dropdown-toggle"
                       type="button"
-                      aria-expanded="userMenuOpen ? 'true' : 'false'"
+                      :aria-expanded="userMenuOpen ? 'true' : 'false'"
                       @click="toggleUserMenu"
                   >
                     <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-person-lines-fill" viewBox="0 0 16 16">
@@ -132,15 +151,13 @@
       <router-view />
     </main>
 
-    <footer class="bd-footer py-4 py-md-5 mt-5 bg-body-tertiary">
-      <div class="container py-4 py-md-5 px-4 px-md-3 text-body-secondary">
-        <p>
-          &copy; <i>ACoSci Tasks App</i> by Gernot Schörner
-          ::
+    <footer class="app-footer">
+      <div class="container-xxl d-flex flex-column flex-md-row justify-content-between align-items-center gap-2">
+        <span>© 2013 <i>ACoSci Tasks App</i> by Gernot Schörner</span>
+        <div class="d-flex gap-3">
           <router-link to="/about">Über ACoSci Tasks</router-link>
-          ::
           <router-link to="/impressum">Impressum</router-link>
-        </p>
+        </div>
       </div>
     </footer>
   </div>
@@ -289,6 +306,22 @@ html, body {
 
 .user-menu-group {
   position: relative;
+}
+
+.app-footer {
+  flex-shrink: 0;
+  padding: 1rem 0;
+  background: #f8f9fa;
+  border-top: 1px solid #dee2e6;
+}
+
+.app-footer a {
+  color: #0d6efd;
+  text-decoration: none;
+}
+
+.app-footer a:hover {
+  text-decoration: underline;
 }
 
 @media (max-width: 991.98px) {

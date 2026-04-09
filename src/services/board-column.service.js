@@ -37,6 +37,14 @@ class BoardColumnService {
             }
         );
     }
+
+    reorderColumns(projectId, payload) {
+        return axios.patch(
+            `${PROJECTS_API_URL}/${projectId}/board-columns/reorder`,
+            payload,
+            { headers: authHeader() }
+        );
+    }
 }
 
 export default new BoardColumnService();

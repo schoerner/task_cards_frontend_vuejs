@@ -73,7 +73,12 @@
         <button
             class="btn btn-sm btn-outline-primary"
             @click.stop="$emit('open-details', task)"
+            title="Details öffnen"
         >
+          <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-box-arrow-in-down-right me-1" viewBox="0 0 16 16">
+            <path fill-rule="evenodd" d="M6.364 13.364a.5.5 0 0 1 0-.707L11.293 7.5H8.5a.5.5 0 0 1 0-1h4a.5.5 0 0 1 .5.5v4a.5.5 0 0 1-1 0V8.207l-4.929 4.93a.5.5 0 0 1-.707 0"/>
+            <path fill-rule="evenodd" d="M13.5 3a.5.5 0 0 0-.5-.5h-10A1.5 1.5 0 0 0 1.5 4v9A1.5 1.5 0 0 0 3 14.5h9a1.5 1.5 0 0 0 1.5-1.5zM13 3.5a.5.5 0 0 1 .5.5v9a.5.5 0 0 1-.5.5H3a.5.5 0 0 1-.5-.5V4a.5.5 0 0 1 .5-.5z"/>
+          </svg>
           Details
         </button>
       </div>

@@ -1,11 +1,11 @@
 import { createWebHistory, createRouter } from 'vue-router';
 import store from '@/store';
 
+import About from '@/components/About.vue';
 import Boards from '@/components/Boards.vue';
-import CreateTask from '@/components/CreateTask.vue';
+import TaskCalendar from '@/components/TaskCalendar.vue';
 import UserLogin from '@/components/UserLogin.vue';
 import UserSignUp from '@/components/UserSignUp.vue';
-import About from '@/components/About.vue';
 import Impressum from '@/components/Impressum.vue';
 import Welcome from '@/components/Welcome.vue';
 import MyOwnedProjectManager from '@/components/MyOwnedProjectManager.vue';
@@ -13,11 +13,12 @@ import ProjectMemberOverview from '@/components/ProjectMemberOverview.vue';
 import UserManagement from '@/components/UserManagement.vue';
 
 const UserProfile = () => import('@/components/UserProfile.vue');
+const UserProfiles = () => import('@/components/UserProfiles.vue');
 
 const routes = [
     { path: '/', component: Welcome },
     { path: '/boards', component: Boards, meta: { requiresAuth: true } },
-    { path: '/tasks/add', component: CreateTask, meta: { requiresAuth: true } },
+    { path: '/calendar', component: TaskCalendar, meta: { requiresAuth: true } },
     { path: '/projects', component: MyOwnedProjectManager, meta: { requiresAuth: true } },
     { path: '/projects/member', component: ProjectMemberOverview, meta: { requiresAuth: true } },
     { path: '/login', component: UserLogin },
@@ -25,6 +26,7 @@ const routes = [
     { path: '/about', component: About },
     { path: '/impressum', component: Impressum },
     { path: '/profile', name: 'UserProfile', component: UserProfile, meta: { requiresAuth: true } },
+    { path: '/user_profiles/:userId?', name: 'UserProfiles', component: UserProfiles, meta: { requiresAuth: true } },
     { path: '/user-management', component: UserManagement, meta: { requiresAdmin: true } }
 ];
 

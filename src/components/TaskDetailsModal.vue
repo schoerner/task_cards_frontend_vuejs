@@ -1,5 +1,5 @@
 <template>
-  <div class="modal fade" id="taskDetailsModal" tabindex="-1" aria-hidden="true">
+  <div ref="taskDetailsModal" class="modal fade" id="taskDetailsModal" tabindex="-1" aria-hidden="true">
     <div class="modal-dialog modal-xl modal-dialog-scrollable">
       <div class="modal-content">
         <div class="modal-header">
@@ -44,6 +44,10 @@
                           @click="toggleTimeTracking"
                           :disabled="busy"
                       >
+                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-stopwatch me-1" viewBox="0 0 16 16">
+                          <path d="M8.5 5.6a.5.5 0 1 0-1 0v2.9h-3a.5.5 0 0 0 0 1H8a.5.5 0 0 0 .5-.5z"/>
+                          <path d="M6.5 1A.5.5 0 0 1 7 .5h2a.5.5 0 0 1 0 1v.57c1.36.196 2.594.78 3.584 1.64l.012-.013.354-.354-.354-.353a.5.5 0 0 1 .707-.708l1.414 1.415a.5.5 0 1 1-.707.707l-.353-.354-.354.354-.013.012A7 7 0 1 1 7 2.071V1.5a.5.5 0 0 1-.5-.5M8 3a6 6 0 1 0 .001 12A6 6 0 0 0 8 3"/>
+                        </svg>
                         {{ isActive ? 'Stop' : 'Start' }}
                       </button>
 
@@ -52,6 +56,10 @@
                           @click="toggleEditMode"
                           :disabled="busy"
                       >
+                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-pencil me-1" viewBox="0 0 16 16">
+                          <path d="M12.146.146a.5.5 0 0 1 .708 0l3 3a.5.5 0 0 1 0 .708l-10 10L3 14l.146-2.854zM11.207 2 4 9.207V10h.793L12 2.793z"/>
+                          <path fill-rule="evenodd" d="M1 13.5V16h2.5l7.293-7.293-2.5-2.5zM1 15v-1.793l6.396-6.396 1.793 1.793L2.793 15z"/>
+                        </svg>
                         {{ editMode ? 'Bearbeitung abbrechen' : 'Bearbeiten' }}
                       </button>
 
@@ -61,6 +69,10 @@
                           @click="archiveTask"
                           :disabled="busy"
                       >
+                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-archive me-1" viewBox="0 0 16 16">
+                          <path d="M0 2a2 2 0 0 1 2-2h12a2 2 0 0 1 2 2v2H0z"/>
+                          <path d="M1 4v10a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V4zm4.5 4h5a.5.5 0 0 1 0 1h-5a.5.5 0 0 1 0-1"/>
+                        </svg>
                         Archivieren
                       </button>
 
@@ -78,6 +90,10 @@
                           @click="deleteTask"
                           :disabled="busy"
                       >
+                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-trash me-1" viewBox="0 0 16 16">
+                          <path d="M5.5 5.5A.5.5 0 0 1 6 6v6a.5.5 0 0 1-1 0V6a.5.5 0 0 1 .5-.5m2.5 0A.5.5 0 0 1 8.5 6v6a.5.5 0 0 1-1 0V6a.5.5 0 0 1 .5-.5m3 .5a.5.5 0 0 0-1 0v6a.5.5 0 0 0 1 0z"/>
+                          <path d="M14.5 3a1 1 0 0 1-1 1H13v9a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V4h-.5a1 1 0 0 1 0-2H5a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1h2.5a1 1 0 0 1 1 1M6 2a.5.5 0 0 0-.5.5V3h5v-.5A.5.5 0 0 0 10 2z"/>
+                        </svg>
                         Löschen
                       </button>
                     </div>
@@ -106,8 +122,18 @@
                       </div>
 
                       <div>
+                        <div class="detail-label">Start</div>
+                        <div class="detail-value">{{ formatDate(taskDetails.startAt) }}</div>
+                      </div>
+
+                      <div>
                         <div class="detail-label">Fällig</div>
                         <div class="detail-value">{{ formatDate(taskDetails.dueDate) }}</div>
+                      </div>
+
+                      <div>
+                        <div class="detail-label">Ort</div>
+                        <div class="detail-value">{{ taskDetails.location || '—' }}</div>
                       </div>
 
                       <div>
@@ -134,6 +160,27 @@
                         {{ taskDetails.description || 'Keine Beschreibung vorhanden.' }}
                       </div>
                     </div>
+
+                    <div class="mt-3">
+                      <div class="detail-label mb-2">Erinnerungen</div>
+
+                      <div v-if="!taskDetails.calendarReminders || taskDetails.calendarReminders.length === 0" class="detail-value">
+                        —
+                      </div>
+
+                      <ul
+                          v-else
+                          class="mb-0 ps-3"
+                      >
+                        <li
+                            v-for="reminder in taskDetails.calendarReminders"
+                            :key="reminder.id ?? `${reminder.minutesBefore}-${reminder.message}`"
+                        >
+                          {{ reminder.minutesBefore }} Min. vorher
+                          <span v-if="reminder.message"> – {{ reminder.message }}</span>
+                        </li>
+                      </ul>
+                    </div>
                   </div>
 
                   <form v-else @submit.prevent="saveTask">
@@ -159,11 +206,21 @@
                       </div>
 
                       <div class="col-md-4">
+                        <label class="form-label">Start</label>
+                        <input v-model="editForm.startAt" type="datetime-local" class="form-control">
+                      </div>
+
+                      <div class="col-md-4">
                         <label class="form-label">Fällig bis</label>
                         <input v-model="editForm.dueDate" type="datetime-local" class="form-control">
                       </div>
 
-                      <div class="col-md-4">
+                      <div class="col-md-6">
+                        <label class="form-label">Ort</label>
+                        <input v-model.trim="editForm.location" type="text" class="form-control" maxlength="255">
+                      </div>
+
+                      <div class="col-md-6">
                         <label class="form-label">Schätzung (Min.)</label>
                         <input v-model.number="editForm.estimatedMinutes" type="number" min="0" class="form-control">
                       </div>
@@ -187,6 +244,50 @@
                           <input v-model="editForm.archived" class="form-check-input" type="checkbox" id="taskArchived">
                           <label class="form-check-label" for="taskArchived">Task archiviert</label>
                         </div>
+                      </div>
+
+                      <div class="col-12">
+                        <label class="form-label">Erinnerungen</label>
+
+                        <div
+                            v-for="(reminder, index) in editForm.calendarReminders"
+                            :key="reminder.id ?? index"
+                            class="row g-2 align-items-end mb-2"
+                        >
+                          <div class="col-md-3">
+                            <label class="form-label small">Minuten vorher</label>
+                            <input
+                                v-model.number="reminder.minutesBefore"
+                                type="number"
+                                min="0"
+                                class="form-control"
+                            >
+                          </div>
+
+                          <div class="col-md-7">
+                            <label class="form-label small">Nachricht</label>
+                            <input
+                                v-model.trim="reminder.message"
+                                type="text"
+                                class="form-control"
+                                maxlength="1000"
+                            >
+                          </div>
+
+                          <div class="col-md-2">
+                            <button
+                                type="button"
+                                class="btn btn-outline-danger w-100"
+                                @click="removeEditReminder(index)"
+                            >
+                              Entfernen
+                            </button>
+                          </div>
+                        </div>
+
+                        <button type="button" class="btn btn-outline-secondary btn-sm" @click="addEditReminder">
+                          + Erinnerung
+                        </button>
                       </div>
                     </div>
 
@@ -346,10 +447,13 @@ export default {
         title: '',
         description: '',
         priority: 'MEDIUM',
+        startAt: '',
         dueDate: '',
+        location: '',
         estimatedMinutes: 0,
         boardColumnId: null,
-        archived: false
+        archived: false,
+        calendarReminders: []
       }
     };
   },
@@ -362,14 +466,33 @@ export default {
     }
   },
   mounted() {
-    this.modalInstance = new Modal(document.getElementById('taskDetailsModal'));
+    this.modalInstance = new Modal(this.$refs.taskDetailsModal, {
+      backdrop: true,
+      keyboard: true
+    });
+    this.$refs.taskDetailsModal.addEventListener('hidden.bs.modal', this.handleModalHidden);
+  },
+  beforeUnmount() {
+    this.$refs.taskDetailsModal?.removeEventListener('hidden.bs.modal', this.handleModalHidden);
+    this.cleanupModalArtifacts();
   },
   methods: {
-    async open(taskId) {
-      this.taskId = taskId;
+    async open(taskOrTaskId) {
+      const task = typeof taskOrTaskId === 'object' && taskOrTaskId !== null ? taskOrTaskId : null;
+      this.taskId = task?.id ?? taskOrTaskId;
       this.commentForm.content = '';
       this.modalInnerError = '';
       this.editMode = false;
+
+      if (task) {
+        this.taskDetails = {
+          ...task,
+          project: task.project ?? null,
+          boardColumn: task.boardColumn ?? null
+        };
+        this.isActive = !!task.active;
+      }
+
       this.modalInstance.show();
       await this.loadAll();
     },
@@ -393,7 +516,11 @@ export default {
           TaskCommentService.getComments(this.taskId)
         ]);
 
-        this.taskDetails = taskResponse.data;
+                this.taskDetails = {
+          ...taskResponse.data,
+          project: taskResponse.data?.project ?? this.taskDetails?.project ?? null,
+          boardColumn: taskResponse.data?.boardColumn ?? this.taskDetails?.boardColumn ?? null
+        };
         this.timeRecords = recordsResponse.data || [];
         this.comments = commentsResponse.data || [];
         this.isActive = !!taskResponse.data?.active;
@@ -402,13 +529,21 @@ export default {
           title: taskResponse.data?.title || '',
           description: taskResponse.data?.description || '',
           priority: taskResponse.data?.priority || 'MEDIUM',
+          startAt: this.toLocalDateTime(taskResponse.data?.startAt),
           dueDate: this.toLocalDateTime(taskResponse.data?.dueDate),
+          location: taskResponse.data?.location || '',
           estimatedMinutes: taskResponse.data?.estimatedMinutes ?? 0,
-          boardColumnId: taskResponse.data?.boardColumn?.id ?? null,
-          archived: !!taskResponse.data?.archived
+          boardColumnId: taskResponse.data?.boardColumn?.id ?? taskResponse.data?.boardColumnId ?? null,
+          archived: !!taskResponse.data?.archived,
+          calendarReminders: (taskResponse.data?.calendarReminders || []).map(reminder => ({
+            id: reminder.id ?? null,
+            minutesBefore: reminder.minutesBefore ?? 15,
+            actionType: reminder.actionType || 'DISPLAY',
+            message: reminder.message || ''
+          }))
         };
 
-        const projectId = taskResponse.data?.project?.id;
+        const projectId = taskResponse.data?.project?.id ?? taskResponse.data?.projectId ?? this.taskDetails?.project?.id ?? this.taskDetails?.projectId;
         if (projectId) {
           const columnsResponse = await BoardColumnService.getBoardColumns(projectId);
           this.boardColumns = columnsResponse.data || [];
@@ -434,12 +569,32 @@ export default {
           title: this.taskDetails.title || '',
           description: this.taskDetails.description || '',
           priority: this.taskDetails.priority || 'MEDIUM',
+          startAt: this.toLocalDateTime(this.taskDetails.startAt),
           dueDate: this.toLocalDateTime(this.taskDetails.dueDate),
+          location: this.taskDetails.location || '',
           estimatedMinutes: this.taskDetails.estimatedMinutes ?? 0,
           boardColumnId: this.taskDetails.boardColumn?.id ?? null,
-          archived: !!this.taskDetails.archived
+          archived: !!this.taskDetails.archived,
+          calendarReminders: (this.taskDetails.calendarReminders || []).map(reminder => ({
+            id: reminder.id ?? null,
+            minutesBefore: reminder.minutesBefore ?? 15,
+            actionType: reminder.actionType || 'DISPLAY',
+            message: reminder.message || ''
+          }))
         };
       }
+    },
+
+    addEditReminder() {
+      this.editForm.calendarReminders.push({
+        minutesBefore: 15,
+        actionType: 'DISPLAY',
+        message: ''
+      });
+    },
+
+    removeEditReminder(index) {
+      this.editForm.calendarReminders.splice(index, 1);
     },
 
     async saveTask() {
@@ -452,10 +607,18 @@ export default {
           description: this.editForm.description || null,
           boardColumnId: this.editForm.boardColumnId ? Number(this.editForm.boardColumnId) : null,
           priority: this.editForm.priority,
+          startAt: this.editForm.startAt ? new Date(this.editForm.startAt).toISOString() : null,
           dueDate: this.editForm.dueDate ? new Date(this.editForm.dueDate).toISOString() : null,
+          location: this.editForm.location || null,
           estimatedMinutes: Number(this.editForm.estimatedMinutes || 0),
           trackedMinutes: this.taskDetails?.trackedMinutes ?? 0,
           archived: !!this.editForm.archived,
+          calendarReminders: (this.editForm.calendarReminders || []).map(reminder => ({
+            id: reminder.id ?? null,
+            minutesBefore: Number(reminder.minutesBefore || 0),
+            actionType: reminder.actionType || 'DISPLAY',
+            message: reminder.message || null
+          })),
           assigneeIds: [],
           labelIds: []
         });
@@ -559,6 +722,11 @@ export default {
       }
     },
 
+    async loadComments() {
+      const commentsResponse = await TaskCommentService.getComments(this.taskId);
+      this.comments = commentsResponse.data || [];
+    },
+
     async createComment() {
       if (!this.commentForm.content) {
         return;
@@ -573,8 +741,7 @@ export default {
         });
 
         this.commentForm.content = '';
-        await this.loadAll();
-        this.$emit('task-updated', this.taskId);
+        await this.loadComments();
       } catch (error) {
         this.modalInnerError =
             error?.response?.data?.message ||
@@ -592,8 +759,7 @@ export default {
 
       try {
         await TaskCommentService.deleteComment(this.taskId, commentId);
-        await this.loadAll();
-        this.$emit('task-updated', this.taskId);
+        await this.loadComments();
       } catch (error) {
         this.modalInnerError =
             error?.response?.data?.message ||
@@ -603,6 +769,35 @@ export default {
       } finally {
         this.busyComment = false;
       }
+    },
+
+    commentAuthorLabel(comment) {
+      if (!comment) {
+        return 'Unbekannt';
+      }
+
+      const firstName = comment.authorFirstName?.trim() || '';
+      const lastName = comment.authorLastName?.trim() || '';
+      const fullName = `${firstName} ${lastName}`.trim();
+
+      if (fullName) {
+        return fullName;
+      }
+
+      return comment.authorEmail || `Benutzer #${comment.authorUserId ?? 'unbekannt'}`;
+    },
+
+    handleModalHidden() {
+      this.editMode = false;
+      this.commentForm.content = '';
+      this.modalInnerError = '';
+      this.cleanupModalArtifacts();
+    },
+
+    cleanupModalArtifacts() {
+      document.body.classList.remove('modal-open');
+      document.body.style.removeProperty('padding-right');
+      document.querySelectorAll('.modal-backdrop').forEach((backdrop) => backdrop.remove());
     },
 
     priorityBadgeClass(priority) {
