@@ -277,6 +277,22 @@
                   <input v-model.number="createTaskForm.estimatedMinutes" type="number" min="0" class="form-control">
                 </div>
 
+                <div class="col-12">
+                  <label class="form-label">Zugewiesene Projektmitglieder</label>
+                  <select v-model="createTaskForm.assigneeIds" class="form-select" multiple>
+                    <option
+                        v-for="member in members"
+                        :key="member.userId"
+                        :value="member.userId"
+                    >
+                      {{ member.firstName }} {{ member.lastName }} ({{ member.email }})
+                    </option>
+                  </select>
+                  <div class="form-text">
+                    Mehrfachauswahl mit Strg/Cmd.
+                  </div>
+                </div>
+
                 <div class="col-md-6">
                   <label class="form-label">Startspalte</label>
                   <select v-model="createTaskForm.boardColumnId" class="form-select">
@@ -515,6 +531,7 @@ export default {
         location: '',
         estimatedMinutes: 0,
         boardColumnId: null,
+        assigneeIds: [],
         calendarReminders: []
       },
       createColumnForm: {
@@ -897,6 +914,7 @@ export default {
         location: '',
         estimatedMinutes: 0,
         boardColumnId: columnId ? Number(columnId) : null,
+        assigneeIds: [],
         calendarReminders: []
       };
       this.modalErrorMessage = '';
@@ -928,7 +946,7 @@ export default {
             actionType: reminder.actionType || 'DISPLAY',
             message: reminder.message || null
           })),
-          assigneeIds: [],
+          assigneeIds: (this.createTaskForm.assigneeIds || []).map(id => Number(id)),
           labelIds: []
         });
 

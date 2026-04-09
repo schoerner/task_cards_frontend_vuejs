@@ -122,6 +122,16 @@
                       </div>
 
                       <div>
+                        <div class="detail-label">Zugewiesen</div>
+                        <div class="detail-value">
+                          <span v-if="!taskDetails.assignees || taskDetails.assignees.length === 0">—</span>
+                          <span v-else>
+                            {{ taskDetails.assignees.map(user => `${user.firstName || ''} ${user.lastName || ''}`.trim() || user.email).join(', ') }}
+                          </span>
+                        </div>
+                      </div>
+
+                      <div>
                         <div class="detail-label">Start</div>
                         <div class="detail-value">{{ formatDate(taskDetails.startAt) }}</div>
                       </div>
@@ -203,6 +213,22 @@
                           <option value="HIGH">HIGH</option>
                           <option value="URGENT">URGENT</option>
                         </select>
+                      </div>
+
+                      <div class="col-12">
+                        <label class="form-label">Zugewiesene Projektmitglieder</label>
+                        <select v-model="editForm.assigneeIds" class="form-select" multiple>
+                          <option
+                              v-for="member in projectMembers"
+                              :key="member.userId"
+                              :value="member.userId"
+                          >
+                            {{ member.firstName }} {{ member.lastName }} ({{ member.email }})
+                          </option>
+                        </select>
+                        <div class="form-text">
+                          Mehrfachauswahl mit Strg/Cmd.
+                        </div>
                       </div>
 
                       <div class="col-md-4">
@@ -418,6 +444,7 @@
 
 <script>
 import { Modal } from 'bootstrap';
+import ProjectMemberService from '@/services/project-member.service';
 import TaskService from '@/services/task.service.js';
 import TaskCommentService from '@/services/task-comment.service.js';
 import BoardColumnService from '@/services/board-column.service.js';
@@ -432,6 +459,7 @@ export default {
       taskDetails: null,
       comments: [],
       timeRecords: [],
+      projectMembers: [],
       boardColumns: [],
       loading: false,
       busy: false,
@@ -453,6 +481,7 @@ export default {
         estimatedMinutes: 0,
         boardColumnId: null,
         archived: false,
+        assigneeIds: [],
         calendarReminders: []
       }
     };
@@ -535,6 +564,7 @@ export default {
           estimatedMinutes: taskResponse.data?.estimatedMinutes ?? 0,
           boardColumnId: taskResponse.data?.boardColumn?.id ?? taskResponse.data?.boardColumnId ?? null,
           archived: !!taskResponse.data?.archived,
+          assigneeIds: (taskResponse.data?.assignees || []).map(user => user.id),
           calendarReminders: (taskResponse.data?.calendarReminders || []).map(reminder => ({
             id: reminder.id ?? null,
             minutesBefore: reminder.minutesBefore ?? 15,
@@ -545,10 +575,15 @@ export default {
 
         const projectId = taskResponse.data?.project?.id ?? taskResponse.data?.projectId ?? this.taskDetails?.project?.id ?? this.taskDetails?.projectId;
         if (projectId) {
-          const columnsResponse = await BoardColumnService.getBoardColumns(projectId);
+          const [columnsResponse, membersResponse] = await Promise.all([
+            BoardColumnService.getBoardColumns(projectId),
+            ProjectMemberService.getMembers(projectId)
+          ]);
           this.boardColumns = columnsResponse.data || [];
+          this.projectMembers = membersResponse.data || [];
         } else {
           this.boardColumns = [];
+          this.projectMembers = [];
         }
       } catch (error) {
         this.errorMessage =
@@ -575,6 +610,7 @@ export default {
           estimatedMinutes: this.taskDetails.estimatedMinutes ?? 0,
           boardColumnId: this.taskDetails.boardColumn?.id ?? null,
           archived: !!this.taskDetails.archived,
+          assigneeIds: (this.taskDetails.assignees || []).map(user => user.id),
           calendarReminders: (this.taskDetails.calendarReminders || []).map(reminder => ({
             id: reminder.id ?? null,
             minutesBefore: reminder.minutesBefore ?? 15,
@@ -619,7 +655,7 @@ export default {
             actionType: reminder.actionType || 'DISPLAY',
             message: reminder.message || null
           })),
-          assigneeIds: [],
+          assigneeIds: (this.editForm.assigneeIds || []).map(id => Number(id)),
           labelIds: []
         });
 
