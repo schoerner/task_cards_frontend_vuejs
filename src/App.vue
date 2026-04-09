@@ -153,7 +153,7 @@
 
     <footer class="app-footer">
       <div class="container-xxl d-flex flex-column flex-md-row justify-content-between align-items-center gap-2">
-        <span>© 2013 <i>ACoSci Tasks App</i> by Gernot Schörner</span>
+        <span>© 2007 - 2026 <i>ACoSci Tasks App</i> by Gernot Schörner</span>
         <div class="d-flex gap-3">
           <router-link to="/about">Über ACoSci Tasks</router-link>
           <router-link to="/impressum">Impressum</router-link>

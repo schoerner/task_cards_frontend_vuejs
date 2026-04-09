@@ -21,9 +21,17 @@ Change your admin password after your first log in.
 MYSQL_USER=schueler
 MYSQL_PASSWORD=Geheim01
 MYSQL_ROOT_PASSWORD=Geheim02
+
 APP_ADMIN_EMAIL=admin@example.com
 APP_ADMIN_PASSWORD=12345678
-VITE_API_URL=/api
+
+SPRING_DATASOURCE_URL=jdbc:mariadb://localhost:3306/tasks
+SPRING_DATASOURCE_USERNAME=schueler
+SPRING_DATASOURCE_PASSWORD=Geheim01
+
+SECURITY_JWT_SECRET_KEY=Ein sehr langer, zufällig erzeugter HEX-String
+SECURITY_JWT_EXPIRATION_TIME=3600000
+SECURITY_JWT_REFRESH_EXPIRATION_TIME=604800000
 ```
 Consider that MYSQL_ and APP_ variables belong to the backend and VITE_ to the frontend.
 
