@@ -1,5 +1,6 @@
 import { createWebHistory, createRouter } from 'vue-router';
 import store from '@/store';
+import AuthService from '@/services/auth.service';
 
 import About from '@/components/About.vue';
 import Boards from '@/components/Boards.vue';
@@ -36,22 +37,30 @@ const router = createRouter({
 });
 
 router.beforeEach((to, from, next) => {
+    const currentUser = store.getters['auth/currentUser'];
     const loggedIn = store.getters['auth/loggedIn'];
     const isAdmin = store.getters['auth/isAdmin'];
 
+    if (currentUser?.token && AuthService.isTokenExpired(currentUser.token)) {
+        AuthService.forceLogout('Ihre Sitzung ist abgelaufen. Bitte melden Sie sich erneut an.');
+        store.commit('auth/logout');
+    }
+
+    const effectiveLoggedIn = store.getters['auth/loggedIn'];
+
     if (to.meta.requiresAdmin) {
-        if (!loggedIn) {
+        if (!effectiveLoggedIn) {
             next('/login');
             return;
         }
 
         if (!isAdmin) {
-            next('/tasks');
+            next('/boards');
             return;
         }
     }
 
-    if (to.meta.requiresAuth && !loggedIn) {
+    if (to.meta.requiresAuth && !effectiveLoggedIn) {
         next('/login');
         return;
     }

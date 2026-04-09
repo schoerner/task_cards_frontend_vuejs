@@ -1,51 +1,121 @@
 import axios from 'axios';
 import TaskAppConfig from "@/task_app.config.js";
-import {jwtDecode} from "jwt-decode";
+import { jwtDecode } from "jwt-decode";
 
 const API_URL = TaskAppConfig.baseUrl() + '/auth';
+const USER_STORAGE_KEY = 'user';
+const AUTH_MESSAGE_KEY = 'authMessage';
+
+function buildStoredUser(accessToken, refreshToken, expiresIn, refreshExpiresIn) {
+    const userDetails = jwtDecode(accessToken);
+
+    return {
+        id: userDetails.id,
+        username: userDetails.username,
+        email: userDetails.email,
+        roles: userDetails.roles,
+        token: accessToken,
+        refreshToken,
+        expiresIn,
+        refreshExpiresIn
+    };
+}
 
 class AuthService {
     login(user) {
-        console.group("LOGIN", user);
-        console.log(API_URL);
-        return axios
-            .post(API_URL + '/login', {
-                email: user.email,
-                password: user.password
-            })
-            .then(response => {
-                console.log('Login success');
-                console.log(response.data);
+        return axios.post(API_URL + '/login', {
+            email: user.email,
+            password: user.password
+        }).then(response => {
+            const data = response.data;
 
-                if (response.data.token) {
-                    const userDetails = jwtDecode(response.data.token)
-                    console.log("AuthService.login().userDetails", userDetails);
-                    const userToStore = {
-                        id: userDetails.id,
-                        username: userDetails.username,
-                        email: userDetails.email,
-                        roles: userDetails.roles,
-                        token: response.data.token,
-                        expiresIn: response.data.expiresIn
-                    };
-                    console.log("AuthService.login().user", userToStore);
-                    localStorage.setItem('user', JSON.stringify(userToStore));
-                    return userToStore;
-                }
+            if (data.token) {
+                const userToStore = buildStoredUser(
+                    data.token,
+                    data.refreshToken,
+                    data.expiresIn,
+                    data.refreshExpiresIn
+                );
+                this.setStoredUser(userToStore);
+                return userToStore;
+            }
 
-                // todo what to return else?
-                console.log("AuthService.login().response.data", response.data);
-                return response.data;
-            });
+            return data;
+        });
+    }
+
+    refreshToken() {
+        const user = this.getStoredUser();
+
+        if (!user?.refreshToken) {
+            return Promise.reject(new Error('Kein Refresh-Token vorhanden.'));
+        }
+
+        return axios.post(API_URL + '/refresh', {
+            refreshToken: user.refreshToken
+        }).then(response => {
+            const data = response.data;
+            const updatedUser = buildStoredUser(
+                data.token,
+                data.refreshToken,
+                data.expiresIn,
+                data.refreshExpiresIn
+            );
+            this.setStoredUser(updatedUser);
+            return updatedUser;
+        });
     }
 
     logout() {
-        localStorage.removeItem('user');
+        const user = this.getStoredUser();
+
+        if (user?.refreshToken) {
+            axios.post(API_URL + '/logout', {
+                refreshToken: user.refreshToken
+            }).catch(() => {});
+        }
+
+        localStorage.removeItem(USER_STORAGE_KEY);
+    }
+
+    forceLogout(message = 'Ihre Sitzung ist abgelaufen. Bitte melden Sie sich erneut an.') {
+        localStorage.removeItem(USER_STORAGE_KEY);
+        sessionStorage.setItem(AUTH_MESSAGE_KEY, message);
+    }
+
+    getLogoutMessage() {
+        const message = sessionStorage.getItem(AUTH_MESSAGE_KEY);
+        if (message) {
+            sessionStorage.removeItem(AUTH_MESSAGE_KEY);
+        }
+        return message;
+    }
+
+    getStoredUser() {
+        return JSON.parse(localStorage.getItem(USER_STORAGE_KEY));
+    }
+
+    setStoredUser(user) {
+        localStorage.setItem(USER_STORAGE_KEY, JSON.stringify(user));
+    }
+
+    isTokenExpired(token) {
+        if (!token) {
+            return true;
+        }
+
+        try {
+            const decoded = jwtDecode(token);
+            if (!decoded?.exp) {
+                return true;
+            }
+            return decoded.exp * 1000 <= Date.now();
+        } catch {
+            return true;
+        }
     }
 
     register(user) {
-        console.log("auth.service.js -> register", user);
-        console.log("url: ", API_URL + '/signup');
         return axios.post(API_URL + '/signup', {
             email: user.email,
             password: user.password,

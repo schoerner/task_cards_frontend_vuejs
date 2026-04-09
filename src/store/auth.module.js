@@ -1,10 +1,15 @@
 import AuthService from '../services/auth.service';
 
-const storedUser = JSON.parse(localStorage.getItem('user'));
+const storedUser = AuthService.getStoredUser();
+const hasValidStoredToken = storedUser && !AuthService.isTokenExpired(storedUser.token);
 
-const initialState = storedUser
+const initialState = hasValidStoredToken
     ? { status: { loggedIn: true }, user: storedUser }
     : { status: { loggedIn: false }, user: null };
+
+if (storedUser && !hasValidStoredToken) {
+    AuthService.forceLogout('Ihre Sitzung ist abgelaufen. Bitte melden Sie sich erneut an.');
+}
 
 function normalizeRoles(user) {
     if (!user || !Array.isArray(user.roles)) {
@@ -96,8 +101,8 @@ export const auth = {
         },
 
         refreshStoredUser({ commit }) {
-            const user = JSON.parse(localStorage.getItem('user'));
-            if (user) {
+            const user = AuthService.getStoredUser();
+            if (user && !AuthService.isTokenExpired(user.token)) {
                 commit('loginSuccess', user);
             } else {
                 commit('logout');

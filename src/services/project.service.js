@@ -1,12 +1,11 @@
-import axios from 'axios';
-import authHeader from './auth-header';
+import api from './api';
 import TaskAppConfig from '@/task_app.config.js';
 
 const API_URL = `${TaskAppConfig.baseUrl()}/projects`;
 
 class ProjectService {
     getVisibleProjects() {
-        return axios.get(`${API_URL}/my`, { headers: authHeader() });
+        return api.get(`${API_URL}/my`);
     }
 
     getMyProjects() {
@@ -14,23 +13,23 @@ class ProjectService {
     }
 
     getProject(projectId) {
-        return axios.get(`${API_URL}/${projectId}`, { headers: authHeader() });
+        return api.get(`${API_URL}/${projectId}`);
     }
 
     createProject(project) {
-        return axios.post(`${API_URL}`, project, { headers: authHeader() });
+        return api.post(`${API_URL}`, project);
     }
 
     updateProject(projectId, project) {
-        return axios.put(`${API_URL}/${projectId}`, project, { headers: authHeader() });
+        return api.put(`${API_URL}/${projectId}`, project);
     }
 
     archiveProject(projectId) {
-        return axios.patch(`${API_URL}/${projectId}/archive`, {}, { headers: authHeader() });
+        return api.patch(`${API_URL}/${projectId}/archive`, {});
     }
 
     deleteProject(projectId) {
-        return axios.delete(`${API_URL}/${projectId}`, { headers: authHeader() });
+        return api.delete(`${API_URL}/${projectId}`);
     }
 }
 

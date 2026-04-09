@@ -60,6 +60,14 @@
             </svg>
             Zu den Boards
           </router-link>
+
+          <router-link to="/boards" class="btn btn-outline-secondary btn-lg">
+            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-calendar3" viewBox="0 0 16 16">
+              <path d="M14 0a1 1 0 0 1 1 1v1h-1V1H2v1H1V1a1 1 0 0 1 1-1h1v1a1 1 0 1 0 2 0V0h6v1a1 1 0 1 0 2 0V0z"/>
+              <path d="M1 3h14v11a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2zm2 2v2h2V5zm3 0v2h2V5zm3 0v2h2V5zm3 0v2h2V5zM3 8v2h2V8zm3 0v2h2V8zm3 0v2h2V8zm-6 3v2h2v-2zm3 0v2h2v-2z"/>
+            </svg>
+            Zum Kalender
+          </router-link>
         </div>
       </div>
     </section>
@@ -106,15 +114,31 @@
             <div class="card h-100 shadow-sm border-0 feature-card">
               <div class="card-body">
                 <div class="feature-icon mb-3">
-                  <svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" fill="currentColor"
-                       class="bi bi-stopwatch-fill" viewBox="0 0 16 16">
-                    <path d="M6.5 0a.5.5 0 0 0 0 1H7v1.07A7 7 0 1 0 8 2.07V1h.5a.5.5 0 0 0 0-1zm2.5 3.255A6 6 0 1 1 8 2a6 6 0 0 1 1 1.255"/>
-                    <path d="M8 4a.5.5 0 0 0-.5.5v3.25c0 .167.083.323.22.416l2.5 1.5a.5.5 0 1 0 .56-.832L8.5 7.466V4.5A.5.5 0 0 0 8 4"/>
+                  <svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" fill="currentColor" class="bi bi-stopwatch" viewBox="0 0 16 16">
+                    <path d="M8.5 5.6a.5.5 0 1 0-1 0v2.9h-3a.5.5 0 0 0 0 1H8a.5.5 0 0 0 .5-.5z"/>
+                    <path d="M6.5 1A.5.5 0 0 1 7 .5h2a.5.5 0 0 1 0 1v.57c1.36.196 2.594.78 3.584 1.64l.012-.013.354-.354-.354-.353a.5.5 0 0 1 .707-.708l1.414 1.415a.5.5 0 1 1-.707.707l-.353-.354-.354.354-.013.012A7 7 0 1 1 7 2.071V1.5a.5.5 0 0 1-.5-.5M8 3a6 6 0 1 0 .001 12A6 6 0 0 0 8 3"/>
                   </svg>
                 </div>
                 <h3 class="h5">Zeiterfassung mit einem Klick</h3>
                 <p class="card-text mb-0">
                   Starte und stoppe Zeiten direkt an der Aufgabe, ohne unnötige Zwischenschritte.
+                </p>
+              </div>
+            </div>
+          </div>
+
+          <div class="col-md-6 col-lg-3">
+            <div class="card h-100 shadow-sm border-0 feature-card">
+              <div class="card-body">
+                <div class="feature-icon mb-3">
+                  <svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" fill="currentColor" class="bi bi-calendar3" viewBox="0 0 16 16">
+                    <path d="M14 0a1 1 0 0 1 1 1v1h-1V1H2v1H1V1a1 1 0 0 1 1-1h1v1a1 1 0 1 0 2 0V0h6v1a1 1 0 1 0 2 0V0z"/>
+                    <path d="M1 3h14v11a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2zm2 2v2h2V5zm3 0v2h2V5zm3 0v2h2V5zm3 0v2h2V5zM3 8v2h2V8zm3 0v2h2V8zm3 0v2h2V8zm-6 3v2h2v-2zm3 0v2h2v-2z"/>
+                  </svg>
+                </div>
+                <h3 class="h5">Kalender-Integration</h3>
+                <p class="card-text mb-0">
+                  Importiere dir den ACoSci Tasks Kalender in deine bevorzugte Kalender App.
                 </p>
               </div>
             </div>

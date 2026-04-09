@@ -9,4 +9,7 @@ import 'bootstrap-icons/font/bootstrap-icons.css';
 const app = createApp(App)
 app.use(router)
 app.use(store)
+
+store.dispatch('auth/refreshStoredUser');
+
 app.mount('#app')

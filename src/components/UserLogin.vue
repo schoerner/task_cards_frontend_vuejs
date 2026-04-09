@@ -51,6 +51,7 @@
 <script>
 // todo https://www.bezkoder.com/vue-3-authentication-jwt/#google_vignette
 
+import AuthService from "@/services/auth.service";
 import {Form, Field, ErrorMessage} from "vee-validate";
 import * as yup from "yup";
 
@@ -69,7 +70,7 @@ export default {
 
     return {
       loading: false,
-      errorMessage: "",
+      errorMessage: null,
       schema,
     };
   },
@@ -79,6 +80,15 @@ export default {
     },
   },
   created() {
+    const logoutMessage = AuthService.getLogoutMessage();
+    if (logoutMessage) {
+      this.errorMessage = {
+        title: 'Sitzung abgelaufen',
+        detail: logoutMessage,
+        description: 'Sie wurden aus Sicherheitsgründen abgemeldet.'
+      };
+    }
+
     if (this.loggedIn) {
       this.$router.push("/profile");
     }
@@ -94,15 +104,11 @@ export default {
               },
               (error) => {
                 this.loading = false;
-                this.errorMessage = error.response.data;
-                console.log( error );
-                /*
-                    (error.response &&
-                        error.response.data &&
-                        error.response.data.message) ||
-                    error.message ||
-                    error.toString();
-                 */
+                this.errorMessage = error?.response?.data ?? {
+                  title: 'Login fehlgeschlagen',
+                  detail: 'Die Anmeldung konnte nicht durchgeführt werden.',
+                  description: error?.message ?? 'Unbekannter Fehler'
+                };
               }
           );
     },

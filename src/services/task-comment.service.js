@@ -1,20 +1,19 @@
-import axios from 'axios';
-import authHeader from './auth-header';
+import api from './api';
 import TaskAppConfig from '@/task_app.config.js';
 
 const API_URL = `${TaskAppConfig.baseUrl()}/tasks`;
 
 class TaskCommentService {
     getComments(taskId) {
-        return axios.get(`${API_URL}/${taskId}/comments`, { headers: authHeader() });
+        return api.get(`${API_URL}/${taskId}/comments`);
     }
 
     createComment(taskId, payload) {
-        return axios.post(`${API_URL}/${taskId}/comments`, payload, { headers: authHeader() });
+        return api.post(`${API_URL}/${taskId}/comments`, payload);
     }
 
     deleteComment(taskId, commentId) {
-        return axios.delete(`${API_URL}/${taskId}/comments/${commentId}`, { headers: authHeader() });
+        return api.delete(`${API_URL}/${taskId}/comments/${commentId}`);
     }
 }
 

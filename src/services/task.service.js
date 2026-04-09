@@ -1,5 +1,4 @@
-import axios from 'axios';
-import authHeader from './auth-header';
+import api from './api';
 import TaskAppConfig from '@/task_app.config.js';
 
 const API_URL = `${TaskAppConfig.baseUrl()}/tasks`;
@@ -7,15 +6,15 @@ const PROJECTS_API_URL = `${TaskAppConfig.baseUrl()}/projects`;
 
 class TaskService {
     getTasksByProject(projectId) {
-        return axios.get(`${PROJECTS_API_URL}/${projectId}/tasks`, { headers: authHeader() });
+        return api.get(`${PROJECTS_API_URL}/${projectId}/tasks`);
     }
 
     getTask(taskId) {
-        return axios.get(`${API_URL}/${taskId}`, { headers: authHeader() });
+        return api.get(`${API_URL}/${taskId}`);
     }
 
     createTask(task) {
-        return axios.post(`${API_URL}`, task, { headers: authHeader() });
+        return api.post(`${API_URL}`, task);
     }
 
     saveTask(task) {
@@ -31,58 +30,55 @@ class TaskService {
             payload = taskIdOrTask;
         }
 
-        return axios.put(`${API_URL}/${taskId}`, payload, { headers: authHeader() });
+        return api.put(`${API_URL}/${taskId}`, payload);
     }
 
     moveTask(taskId, boardColumnId) {
-        return axios.patch(
+        return api.patch(
             `${API_URL}/${taskId}/move`,
             null,
-            {
-                headers: authHeader(),
-                params: { boardColumnId }
-            }
+            { params: { boardColumnId } }
         );
     }
 
     archiveTask(taskId) {
-        return axios.patch(`${API_URL}/${taskId}/archive`, {}, { headers: authHeader() });
+        return api.patch(`${API_URL}/${taskId}/archive`, {});
     }
 
     restoreTask(taskId) {
-        return axios.patch(`${API_URL}/${taskId}/restore`, {}, { headers: authHeader() });
+        return api.patch(`${API_URL}/${taskId}/restore`, {});
     }
 
     deleteTask(taskId) {
-        return axios.delete(`${API_URL}/${taskId}`, { headers: authHeader() });
+        return api.delete(`${API_URL}/${taskId}`);
     }
 
     getTimeRecords(taskId) {
-        return axios.get(`${API_URL}/${taskId}/time-records`, { headers: authHeader() });
+        return api.get(`${API_URL}/${taskId}/time-records`);
     }
 
     isTimeTrackingActive(taskId) {
-        return axios.get(`${API_URL}/${taskId}/time-tracking/active`, { headers: authHeader() });
+        return api.get(`${API_URL}/${taskId}/time-tracking/active`);
     }
 
     startTimeTracking(taskId) {
-        return axios.post(`${API_URL}/${taskId}/time-tracking/start`, {}, { headers: authHeader() });
+        return api.post(`${API_URL}/${taskId}/time-tracking/start`, {});
     }
 
     stopTimeTracking(taskId) {
-        return axios.post(`${API_URL}/${taskId}/time-tracking/stop`, {}, { headers: authHeader() });
+        return api.post(`${API_URL}/${taskId}/time-tracking/stop`, {});
     }
 
     getMyCalendarTasks() {
-        return axios.get(`${TaskAppConfig.baseUrl()}/calendar/tasks`, { headers: authHeader() });
+        return api.get(`${TaskAppConfig.baseUrl()}/calendar/tasks`);
     }
 
     getCalendarFeedLink() {
-        return axios.get(`${TaskAppConfig.baseUrl()}/calendar/feed-link`, { headers: authHeader() });
+        return api.get(`${TaskAppConfig.baseUrl()}/calendar/feed-link`);
     }
 
     regenerateCalendarFeedLink() {
-        return axios.post(`${TaskAppConfig.baseUrl()}/calendar/feed-link/regenerate`, {}, { headers: authHeader() });
+        return api.post(`${TaskAppConfig.baseUrl()}/calendar/feed-link/regenerate`, {});
     }
 }
 

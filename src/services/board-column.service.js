@@ -1,48 +1,40 @@
-import axios from 'axios';
-import authHeader from './auth-header';
+import api from './api';
 import TaskAppConfig from '@/task_app.config.js';
 
 const PROJECTS_API_URL = `${TaskAppConfig.baseUrl()}/projects`;
 
 class BoardColumnService {
     getBoardColumns(projectId) {
-        return axios.get(
-            `${PROJECTS_API_URL}/${projectId}/board-columns`,
-            { headers: authHeader() }
+        return api.get(
+            `${PROJECTS_API_URL}/${projectId}/board-columns`
         );
     }
 
     createColumn(projectId, payload) {
-        return axios.post(
+        return api.post(
             `${PROJECTS_API_URL}/${projectId}/board-columns`,
-            payload,
-            { headers: authHeader() }
+            payload
         );
     }
 
     updateColumn(projectId, columnId, payload) {
-        return axios.put(
+        return api.put(
             `${PROJECTS_API_URL}/${projectId}/board-columns/${columnId}`,
-            payload,
-            { headers: authHeader() }
+            payload
         );
     }
 
     deleteColumn(projectId, columnId, fallbackColumnId) {
-        return axios.delete(
+        return api.delete(
             `${PROJECTS_API_URL}/${projectId}/board-columns/${columnId}`,
-            {
-                headers: authHeader(),
-                params: { fallbackColumnId }
-            }
+            { params: {fallbackColumnId} }
         );
     }
 
     reorderColumns(projectId, payload) {
-        return axios.patch(
+        return api.patch(
             `${PROJECTS_API_URL}/${projectId}/board-columns/reorder`,
-            payload,
-            { headers: authHeader() }
+            payload
         );
     }
 }

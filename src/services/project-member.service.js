@@ -1,33 +1,31 @@
-import axios from 'axios';
-import authHeader from './auth-header';
+import api from './api';
 import TaskAppConfig from '@/task_app.config.js';
 
 const API_URL = TaskAppConfig.baseUrl() + '/projects';
 
 class ProjectMemberService {
     getMembers(projectId) {
-        return axios.get(`${API_URL}/${projectId}/members`, { headers: authHeader() });
+        return api.get(`${API_URL}/${projectId}/members`);
     }
 
     addMember(projectId, memberData) {
-        return axios.post(`${API_URL}/${projectId}/members`, memberData, { headers: authHeader() });
+        return api.post(`${API_URL}/${projectId}/members`, memberData);
     }
 
     updateMember(projectId, memberUserId, memberData) {
-        return axios.put(`${API_URL}/${projectId}/members/${memberUserId}`, memberData, { headers: authHeader() });
+        return api.put(`${API_URL}/${projectId}/members/${memberUserId}`, memberData);
     }
 
     updateMemberRole(projectId, memberUserId, memberData) {
-        return axios.put(`${API_URL}/${projectId}/members/${memberUserId}`, memberData, { headers: authHeader() });
+        return api.put(`${API_URL}/${projectId}/members/${memberUserId}`, memberData);
     }
 
     removeMember(projectId, memberUserId) {
-        return axios.delete(`${API_URL}/${projectId}/members/${memberUserId}`, { headers: authHeader() });
+        return api.delete(`${API_URL}/${projectId}/members/${memberUserId}`);
     }
 
     searchMemberCandidates(projectId, query) {
-        return axios.get(`${API_URL}/${projectId}/members/candidates`, {
-            headers: authHeader(),
+        return api.get(`${API_URL}/${projectId}/members/candidates`, {
             params: { query }
         });
     }
