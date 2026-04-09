@@ -88,116 +88,140 @@
         Keine Board-Spalten vorhanden.
       </div>
 
-      <div v-else class="board-scroll">
-        <div class="board-row">
-          <div
-              v-for="column in sortedBoardColumns"
-              :key="column.id"
-              class="board-column"
-              :class="{
-              'drop-highlight': hoveredTaskColumnId === Number(column.id),
-              'column-drop-highlight': hoveredColumnDropId === Number(column.id)
-            }"
-              @dragover.prevent="onCombinedDragOver(column.id, $event)"
-              @dragleave="onCombinedDragLeave(column.id, $event)"
-              @drop="handleCombinedDrop(column.id, $event)"
+      <template v-else>
+        <div v-if="sortedBoardColumns.length > 1" class="board-mobile-nav d-md-none mb-2">
+          <button
+              class="btn btn-outline-secondary btn-sm"
+              @click="scrollBoardByDirection(-1)"
+              type="button"
           >
-            <div class="card shadow-sm h-100">
-              <div class="card-header bg-white">
-                <div class="d-flex justify-content-between align-items-start gap-2">
-                  <div class="d-flex align-items-start gap-2 flex-grow-1 min-w-0">
-                    <button
-                        v-if="canManageBoard"
-                        class="btn btn-sm btn-light drag-handle-column"
-                        type="button"
-                        title="Spalte verschieben"
-                        draggable="true"
-                        @dragstart="onColumnDragStart(column, $event)"
-                        @dragend="onColumnDragEnd"
-                        @click.stop
-                    >
-                      ⠿
-                    </button>
+            ←
+          </button>
 
-                    <div class="min-w-0">
-                      <div class="fw-semibold text-truncate">
-                        {{ column.name }}
-                      </div>
-                      <div class="small text-muted">
-                        {{ tasksByColumn(column.id).length }} Task(s)
+          <span class="small text-muted">
+            Spalten horizontal wischen
+          </span>
+
+          <button
+              class="btn btn-outline-secondary btn-sm"
+              @click="scrollBoardByDirection(1)"
+              type="button"
+          >
+            →
+          </button>
+        </div>
+
+        <div ref="boardScroll" class="board-scroll">
+          <div class="board-row">
+            <div
+                v-for="column in sortedBoardColumns"
+                :key="column.id"
+                class="board-column"
+                :class="{
+                'drop-highlight': hoveredTaskColumnId === Number(column.id),
+                'column-drop-highlight': hoveredColumnDropId === Number(column.id)
+              }"
+                @dragover.prevent="onCombinedDragOver(column.id, $event)"
+                @dragleave="onCombinedDragLeave(column.id, $event)"
+                @drop="handleCombinedDrop(column.id, $event)"
+            >
+              <div class="card shadow-sm h-100">
+                <div class="card-header bg-white">
+                  <div class="d-flex justify-content-between align-items-start gap-2">
+                    <div class="d-flex align-items-start gap-2 flex-grow-1 min-w-0">
+                      <button
+                          v-if="canManageBoard"
+                          class="btn btn-sm btn-light drag-handle-column"
+                          type="button"
+                          title="Spalte verschieben"
+                          draggable="true"
+                          @dragstart="onColumnDragStart(column, $event)"
+                          @dragend="onColumnDragEnd"
+                          @click.stop
+                      >
+                        ⠿
+                      </button>
+
+                      <div class="min-w-0">
+                        <div class="fw-semibold text-truncate">
+                          {{ column.name }}
+                        </div>
+                        <div class="small text-muted">
+                          {{ tasksByColumn(column.id).length }} Task(s)
+                        </div>
                       </div>
                     </div>
-                  </div>
 
-                  <div class="d-flex gap-1 align-items-center">
-                    <button
-                        class="btn btn-sm btn-outline-primary"
-                        @click="openCreateTaskModal(column.id)"
-                        :disabled="!selectedProjectId"
-                        :title="`Task in ${column.name} anlegen`"
-                    >
-                      +
-                    </button>
+                    <div class="d-flex gap-1 align-items-center">
+                      <button
+                          class="btn btn-sm btn-outline-primary"
+                          @click="openCreateTaskModal(column.id)"
+                          :disabled="!selectedProjectId"
+                          :title="`Task in ${column.name} anlegen`"
+                      >
+                        +
+                      </button>
 
-                    <template v-if="canManageBoard">
-                      <button
-                          class="btn btn-sm btn-outline-secondary"
-                          @click="openEditColumnModal(column)"
-                          title="Spalte bearbeiten"
-                      >
-                        <i class="bi bi-pencil-fill"></i>
-                      </button>
-                      <button
-                          class="btn btn-sm btn-outline-danger"
-                          @click="openDeleteColumnModal(column)"
-                          :disabled="column.deletable === false"
-                          title="Spalte löschen"
-                      >
-                        <i class="bi bi-trash-fill"></i>
-                      </button>
-                    </template>
+                      <template v-if="canManageBoard">
+                        <button
+                            class="btn btn-sm btn-outline-secondary"
+                            @click="openEditColumnModal(column)"
+                            title="Spalte bearbeiten"
+                        >
+                          <i class="bi bi-pencil-fill"></i>
+                        </button>
+                        <button
+                            class="btn btn-sm btn-outline-danger"
+                            @click="openDeleteColumnModal(column)"
+                            :disabled="column.deletable === false"
+                            title="Spalte löschen"
+                        >
+                          <i class="bi bi-trash-fill"></i>
+                        </button>
+                      </template>
+                    </div>
                   </div>
                 </div>
-              </div>
 
-              <div class="card-body board-column-body">
-                <div v-if="tasksByColumn(column.id).length === 0" class="text-muted small">
-                  Keine Tasks in dieser Spalte.
-                </div>
+                <div class="card-body board-column-body">
+                  <div v-if="tasksByColumn(column.id).length === 0" class="text-muted small">
+                    Keine Tasks in dieser Spalte.
+                  </div>
 
-                <div class="d-flex flex-column gap-3">
-                  <task-board-card
-                      v-for="task in tasksByColumn(column.id)"
-                      :key="task.id"
-                      :task="task"
-                      @open-details="openTaskDetails"
-                      @time-tracking-changed="handleTaskChanged"
-                      @drag-started="onTaskDragStarted"
-                      @drag-ended="onTaskDragEnded"
-                  />
+                  <div class="d-flex flex-column gap-3">
+                    <task-board-card
+                        v-for="task in tasksByColumn(column.id)"
+                        :key="task.id"
+                        :task="task"
+                        @open-details="openTaskDetails"
+                        @time-tracking-changed="handleTaskChanged"
+                        @drag-started="onTaskDragStarted"
+                        @drag-ended="onTaskDragEnded"
+                    />
+                  </div>
                 </div>
               </div>
             </div>
-          </div>
-          <div
-              v-if="canManageBoard"
-              class="board-column board-column-add"
-          >
             <div
-                class="card shadow-sm h-100 add-column-card"
-                role="button"
-                tabindex="0"
-                @click="openCreateColumnModal"
-                @keydown.enter.prevent="openCreateColumnModal"
-                @keydown.space.prevent="openCreateColumnModal"
+                v-if="canManageBoard"
+                class="board-column board-column-add"
             >
-              <div class="card-body d-flex align-items-center justify-content-center">
-                <span class="add-column-plus">+</span>
+              <div
+                  class="card shadow-sm h-100 add-column-card"
+                  role="button"
+                  tabindex="0"
+                  @click="openCreateColumnModal"
+                  @keydown.enter.prevent="openCreateColumnModal"
+                  @keydown.space.prevent="openCreateColumnModal"
+              >
+                <div class="card-body d-flex align-items-center justify-content-center">
+                  <span class="add-column-plus">+</span>
+                </div>
               </div>
             </div>
           </div>
         </div>
-      </div>
+      </template>
     </div>
 
     <div v-else-if="!loading" class="alert alert-info">
@@ -594,6 +618,22 @@ export default {
     }
   },
   methods: {
+    scrollBoardByDirection(direction) {
+      const container = this.$refs.boardScroll;
+      if (!container) return;
+
+      const column = container.querySelector('.board-column');
+      if (!column) return;
+
+      const gap = 16; // entspricht deinem gap: 1rem
+      const scrollAmount = column.offsetWidth + gap;
+
+      container.scrollBy({
+        left: direction * scrollAmount,
+        behavior: 'smooth'
+      });
+    },
+
     async loadProjects() {
       try {
         const response = await ProjectService.getVisibleProjects();
@@ -1182,5 +1222,39 @@ export default {
 
 .min-w-0 {
   min-width: 0;
+}
+
+.board-mobile-nav {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+}
+
+@media (max-width: 767.98px) {
+  .board-scroll {
+    overflow-x: auto;
+    scroll-snap-type: x mandatory;
+    -webkit-overflow-scrolling: touch;
+    padding-bottom: 0.5rem;
+  }
+
+  .board-row {
+    min-width: 0;
+  }
+
+  .board-column {
+    width: calc(100vw - 2rem);
+    min-width: calc(100vw - 2rem);
+    scroll-snap-align: start;
+    scroll-snap-stop: always;
+  }
+
+  .board-column-add {
+    width: calc(100vw - 2rem);
+    min-width: calc(100vw - 2rem);
+    scroll-snap-align: start;
+    scroll-snap-stop: always;
+  }
 }
 </style>
