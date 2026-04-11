@@ -1231,6 +1231,35 @@ export default {
   gap: 0.75rem;
 }
 
+@media (max-width: 991.98px) {
+  .board-scroll {
+    overflow-x: auto;
+    scroll-snap-type: x mandatory;
+    -webkit-overflow-scrolling: touch;
+    padding-bottom: 0.5rem;
+  }
+
+  .board-row {
+    min-width: 0;
+  }
+
+  .board-column {
+    width: min(327px, calc(100vw - 3rem));
+    min-width: min(327px, calc(100vw - 3rem));
+    max-width: 327px;
+    scroll-snap-align: start;
+    scroll-snap-stop: always;
+  }
+
+  .board-column-add {
+    width: min(327px, calc(100vw - 3rem));
+    min-width: min(327px, calc(100vw - 3rem));
+    max-width: 327px;
+    scroll-snap-align: start;
+    scroll-snap-stop: always;
+  }
+}
+
 @media (max-width: 767.98px) {
   .board-scroll {
     overflow-x: auto;
@@ -1244,15 +1273,17 @@ export default {
   }
 
   .board-column {
-    width: calc(100vw - 2rem);
-    min-width: calc(100vw - 2rem);
+    width: min(490px, calc(100vw - 3rem));
+    min-width: min(490px, calc(100vw - 3rem));
+    max-width: 490px;
     scroll-snap-align: start;
     scroll-snap-stop: always;
   }
 
   .board-column-add {
-    width: calc(100vw - 2rem);
-    min-width: calc(100vw - 2rem);
+    width: min(490px, calc(100vw - 3rem));
+    min-width: min(490px, calc(100vw - 3rem));
+    max-width: 490px;
     scroll-snap-align: start;
     scroll-snap-stop: always;
   }

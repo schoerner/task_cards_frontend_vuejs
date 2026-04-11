@@ -31,7 +31,7 @@
           </div>
 
           <div v-else-if="taskDetails" class="row g-4">
-            <div class="col-lg-7">
+            <div :class="editMode ? 'col-12' : 'col-lg-7'">
               <div class="card shadow-sm border-0">
                 <div class="card-body">
                   <div class="d-flex flex-wrap justify-content-between align-items-center gap-2 mb-3">
@@ -61,6 +61,17 @@
                           <path fill-rule="evenodd" d="M1 13.5V16h2.5l7.293-7.293-2.5-2.5zM1 15v-1.793l6.396-6.396 1.793 1.793L2.793 15z"/>
                         </svg>
                         {{ editMode ? 'Bearbeitung abbrechen' : 'Bearbeiten' }}
+                      </button>
+
+                      <button
+                          v-if="editMode"
+                          type="button"
+                          class="btn btn-sm btn-primary"
+                          @click="saveTask"
+                          :disabled="busy"
+                      >
+                        <i class="bi bi-floppy"></i>
+                        Speichern
                       </button>
 
                       <button
@@ -97,6 +108,10 @@
                         Löschen
                       </button>
                     </div>
+                  </div>
+
+                  <div v-if="modalInnerError" class="alert alert-danger mt-3 mb-0">
+                    {{ modalInnerError }}
                   </div>
 
                   <div v-if="!editMode">
@@ -165,9 +180,16 @@
                     <hr>
 
                     <div>
-                      <div class="detail-label mb-2">Beschreibung</div>
-                      <div class="detail-value description-box">
-                        {{ taskDetails.description || 'Keine Beschreibung vorhanden.' }}
+                      <div>
+                        <div class="detail-label mb-2">Beschreibung</div>
+                        <div class="detail-value description-box">
+                          <MarkdownRenderedContent
+                              :content="taskDetails.description"
+                              empty-text="Keine Beschreibung vorhanden."
+                              :clickable-task-lists="true"
+                              @toggle-task-item="toggleDescriptionTaskItem"
+                          />
+                        </div>
                       </div>
                     </div>
 
@@ -201,8 +223,12 @@
                       </div>
 
                       <div class="col-12">
-                        <label class="form-label">Beschreibung</label>
-                        <textarea v-model.trim="editForm.description" class="form-control" rows="4"></textarea>
+                        <MarkdownEditorWithPreview
+                            v-model="editForm.description"
+                            label="Beschreibung"
+                            :rows="10"
+                            empty-preview-text="Noch keine Beschreibung vorhanden."
+                        />
                       </div>
 
                       <div class="col-md-4">
@@ -317,6 +343,10 @@
                       </div>
                     </div>
 
+                    <div v-if="modalInnerError" class="alert alert-danger mt-3 mb-0">
+                      {{ modalInnerError }}
+                    </div>
+
                     <div class="d-flex justify-content-end gap-2 mt-3">
                       <button type="button" class="btn btn-secondary" @click="toggleEditMode">
                         Abbrechen
@@ -337,15 +367,15 @@
                   </div>
 
                   <form @submit.prevent="createComment" class="mb-4">
-                    <label class="form-label">Neuer Kommentar</label>
-                    <textarea
-                        v-model.trim="commentForm.content"
-                        class="form-control"
-                        rows="3"
-                        maxlength="10000"
-                        placeholder="Kommentar eingeben..."
+                    <MarkdownEditorWithPreview
+                        v-model="commentForm.content"
+                        label="Neuer Kommentar"
+                        :rows="6"
+                        empty-preview-text="Noch kein Kommentartext."
                         :disabled="busyComment"
-                    ></textarea>
+                        :maxlength="10000"
+                        placeholder="Kommentar eingeben..."
+                    />
 
                     <div class="d-flex justify-content-end mt-2">
                       <button class="btn btn-primary btn-sm" type="submit" :disabled="busyComment || !commentForm.content">
@@ -384,7 +414,11 @@
                       </div>
 
                       <div class="comment-content">
-                        {{ comment.content }}
+                        <MarkdownRenderedContent
+                            :content="comment.content"
+                            :clickable-task-lists="false"
+                            empty-text=""
+                        />
                       </div>
                     </div>
                   </div>
@@ -392,7 +426,7 @@
               </div>
             </div>
 
-            <div class="col-lg-5">
+            <div class="col-lg-5" v-if="!editMode">
               <div class="card shadow-sm border-0">
                 <div class="card-body">
                   <div class="d-flex justify-content-between align-items-center mb-3">
@@ -427,10 +461,8 @@
                 </div>
               </div>
 
-              <div v-if="modalInnerError" class="alert alert-danger mt-3 mb-0">
-                {{ modalInnerError }}
-              </div>
             </div>
+
           </div>
         </div>
 
@@ -444,6 +476,8 @@
 
 <script>
 import { Modal } from 'bootstrap';
+import MarkdownRenderedContent from '@/components/MarkdownRenderedContent.vue';
+import MarkdownEditorWithPreview from '@/components/MarkdownEditorWithPreview.vue';
 import ProjectMemberService from '@/services/project-member.service';
 import TaskService from '@/services/task.service.js';
 import TaskCommentService from '@/services/task-comment.service.js';
@@ -452,6 +486,10 @@ import BoardColumnService from '@/services/board-column.service.js';
 export default {
   name: 'TaskDetailsModal',
   emits: ['task-updated', 'task-deleted'],
+  components: {
+    MarkdownRenderedContent,
+    MarkdownEditorWithPreview
+  },
   data() {
     return {
       modalInstance: null,
@@ -899,8 +937,82 @@ export default {
       const pad = (number) => String(number).padStart(2, '0');
 
       return `${date.getFullYear()}-${pad(date.getMonth() + 1)}-${pad(date.getDate())}T${pad(date.getHours())}:${pad(date.getMinutes())}`;
-    }
-  }
+    },
+
+    renderDescriptionMarkdown(value) {
+      if (!value) {
+        return '<p class="mb-0 text-muted">Keine Beschreibung vorhanden.</p>';
+      }
+
+      const normalized = value
+          .replace(/^\[\s\]\s+/gm, '- [ ] ')
+          .replace(/^\[[xX]\]\s+/gm, '- [x] ');
+
+      const html = md.render(normalized);
+      return DOMPurify.sanitize(html);
+    },
+
+    async toggleDescriptionTaskItem(lineIndex) {
+      if (!this.taskDetails?.description) {
+        return;
+      }
+
+      const lines = this.taskDetails.description.split('\n');
+      const line = lines[lineIndex];
+
+      if (typeof line !== 'string') {
+        return;
+      }
+
+      if (/^\s*(?:[-*]\s+)?\[\s\]\s+/.test(line)) {
+        lines[lineIndex] = line.replace(/^(\s*(?:[-*]\s+)?)\[\s\](\s+)/, '$1[x]$2');
+      } else if (/^\s*(?:[-*]\s+)?\[[xX]\]\s+/.test(line)) {
+        lines[lineIndex] = line.replace(/^(\s*(?:[-*]\s+)?)\[[xX]\](\s+)/, '$1[ ]$2');
+      } else {
+        return;
+      }
+
+      const updatedDescription = lines.join('\n');
+
+      this.busy = true;
+      this.modalInnerError = '';
+
+      try {
+        await TaskService.updateTask(this.taskId, {
+          title: this.taskDetails.title,
+          description: updatedDescription,
+          boardColumnId: this.taskDetails.boardColumn?.id ?? this.taskDetails.boardColumnId ?? null,
+          priority: this.taskDetails.priority,
+          startAt: this.taskDetails.startAt,
+          dueDate: this.taskDetails.dueDate,
+          location: this.taskDetails.location || null,
+          estimatedMinutes: Number(this.taskDetails.estimatedMinutes || 0),
+          trackedMinutes: this.taskDetails.trackedMinutes ?? 0,
+          archived: !!this.taskDetails.archived,
+          calendarReminders: (this.taskDetails.calendarReminders || []).map(reminder => ({
+            id: reminder.id ?? null,
+            minutesBefore: Number(reminder.minutesBefore || 0),
+            actionType: reminder.actionType || 'DISPLAY',
+            message: reminder.message || null
+          })),
+          assigneeIds: (this.taskDetails.assignees || []).map(user => Number(user.id)),
+          labelIds: (this.taskDetails.labels || []).map(label => Number(label.id))
+        });
+
+        await this.loadAll();
+        this.$emit('task-updated', this.taskId);
+      } catch (error) {
+        this.modalInnerError =
+            error?.response?.data?.message ||
+            error?.response?.data ||
+            error?.message ||
+            'Checkbox konnte nicht gespeichert werden.';
+      } finally {
+        this.busy = false;
+      }
+    },
+  },
+
 };
 </script>
 
