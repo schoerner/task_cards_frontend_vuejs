@@ -71,17 +71,45 @@
               </div>
 
               <div v-if="isAdmin" class="btn-toolbar" role="toolbar" aria-label="Admin-Navigation">
-                <div class="btn-group nav-btn-group" role="group" aria-label="Admin-Bereich">
-                  <router-link to="/user-management" class="btn nav-group-btn">
-                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-person-fill-add" viewBox="0 0 16 16">
-                      <path d="M12.5 16a3.5 3.5 0 1 0 0-7 3.5 3.5 0 0 0 0 7m.5-5v1h1a.5.5 0 0 1 0 1h-1v1a.5.5 0 0 1-1 0v-1h-1a.5.5 0 0 1 0-1h1v-1a.5.5 0 0 1 1 0m-2-6a3 3 0 1 1-6 0 3 3 0 0 1 6 0"/>
-                      <path d="M2 13c0 1 1 1 1 1h5.256A4.5 4.5 0 0 1 8 12.5a4.5 4.5 0 0 1 1.544-3.393Q8.844 9.002 8 9c-5 0-6 3-6 4"/>
-                    </svg>
-                    <span class="nav-btn-label">Benutzerverwaltung</span>
-                  </router-link>
+                <div
+                    ref="adminMenuWrapper"
+                    class="btn-group nav-btn-group admin-menu-group"
+                    role="group"
+                    aria-label="Administration"
+                >
+                  <button
+                      class="btn nav-group-btn dropdown-toggle"
+                      type="button"
+                      :aria-expanded="adminMenuOpen ? 'true' : 'false'"
+                      @click="toggleAdminMenu"
+                  >
+                    <i class="bi bi-gear-fill"></i>
+                    <span class="nav-btn-label">Administration</span>
+                  </button>
+
+                  <ul
+                      class="dropdown-menu"
+                      :class="{ show: adminMenuOpen }"
+                  >
+                    <li>
+                      <router-link to="/admin/backups" class="dropdown-item" @click="closeAdminMenu">
+                        <i class="bi bi-database-fill-gear"></i>
+                        <span class="nav-btn-label">Backups</span>
+                      </router-link>
+                    </li>
+                    <li>
+                      <router-link to="/user-management" class="dropdown-item" @click="closeAdminMenu">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-person-fill-add" viewBox="0 0 16 16">
+                          <path d="M12.5 16a3.5 3.5 0 1 0 0-7 3.5 3.5 0 0 0 0 7m.5-5v1h1a.5.5 0 0 1 0 1h-1v1a.5.5 0 0 1-1 0v-1h-1a.5.5 0 0 1 0-1h1v-1a.5.5 0 0 1 1 0m-2-6a3 3 0 1 1-6 0 3 3 0 0 1 6 0"/>
+                          <path d="M2 13c0 1 1 1 1 1h5.256A4.5 4.5 0 0 1 8 12.5a4.5 4.5 0 0 1 1.544-3.393Q8.844 9.002 8 9c-5 0-6 3-6 4"/>
+                        </svg>
+                        <span class="nav-btn-label">Benutzerverwaltung</span>
+                      </router-link>
+                    </li>
+                  </ul>
                 </div>
               </div>
-            </div>
+              </div>
 
             <div class="d-flex flex-column flex-lg-row gap-3 align-items-lg-center">
               <div v-if="!currentUser" class="btn-toolbar" role="toolbar" aria-label="Authentifizierung">
@@ -167,7 +195,8 @@
 export default {
   data() {
     return {
-      userMenuOpen: false
+      userMenuOpen: false,
+      adminMenuOpen: false
     };
   },
   computed: {
@@ -195,25 +224,43 @@ export default {
   methods: {
     toggleUserMenu() {
       this.userMenuOpen = !this.userMenuOpen;
+      if (this.userMenuOpen) {
+        this.adminMenuOpen = false;
+      }
     },
     closeUserMenu() {
       this.userMenuOpen = false;
     },
+    toggleAdminMenu() {
+      this.adminMenuOpen = !this.adminMenuOpen;
+      if (this.adminMenuOpen) {
+        this.userMenuOpen = false;
+      }
+    },
+    closeAdminMenu() {
+      this.adminMenuOpen = false;
+    },
     handleDocumentClick(event) {
-      const wrapper = this.$refs.userMenuWrapper;
-      if (!wrapper) return;
+      const userWrapper = this.$refs.userMenuWrapper;
+      const adminWrapper = this.$refs.adminMenuWrapper;
 
-      if (!wrapper.contains(event.target)) {
+      if (userWrapper && !userWrapper.contains(event.target)) {
         this.closeUserMenu();
+      }
+
+      if (adminWrapper && !adminWrapper.contains(event.target)) {
+        this.closeAdminMenu();
       }
     },
     handleEscapeKey(event) {
       if (event.key === "Escape") {
         this.closeUserMenu();
+        this.closeAdminMenu();
       }
     },
     logOut() {
       this.closeUserMenu();
+      this.closeAdminMenu();
       this.$store.dispatch("auth/logout");
       this.$router.push("/login");
     }

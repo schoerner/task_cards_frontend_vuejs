@@ -3,6 +3,7 @@ import store from '@/store';
 import AuthService from '@/services/auth.service';
 
 import About from '@/components/About.vue';
+import AdminBackups from '@/components/AdminBackups.vue';
 import Boards from '@/components/Boards.vue';
 import TaskCalendar from '@/components/TaskCalendar.vue';
 import UserLogin from '@/components/UserLogin.vue';
@@ -18,17 +19,18 @@ const UserProfiles = () => import('@/components/UserProfiles.vue');
 
 const routes = [
     { path: '/', component: Welcome },
+    { path: '/about', component: About },
+    { path: '/admin/backups', component: AdminBackups, meta: { requiresAdmin: true } },
+    { path: '/user-management', component: UserManagement, meta: { requiresAdmin: true } },
     { path: '/boards', component: Boards, meta: { requiresAuth: true } },
     { path: '/calendar', component: TaskCalendar, meta: { requiresAuth: true } },
     { path: '/projects', component: MyOwnedProjectManager, meta: { requiresAuth: true } },
     { path: '/projects/member', component: ProjectMemberOverview, meta: { requiresAuth: true } },
     { path: '/login', component: UserLogin },
     { path: '/signup', component: UserSignUp, meta: { requiresAdmin: true } },
-    { path: '/about', component: About },
     { path: '/impressum', component: Impressum },
     { path: '/profile', name: 'UserProfile', component: UserProfile, meta: { requiresAuth: true } },
     { path: '/user_profiles/:userId?', name: 'UserProfiles', component: UserProfiles, meta: { requiresAuth: true } },
-    { path: '/user-management', component: UserManagement, meta: { requiresAdmin: true } }
 ];
 
 const router = createRouter({
