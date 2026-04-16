@@ -38,17 +38,22 @@ const router = createRouter({
     routes
 });
 
-router.beforeEach((to, from, next) => {
+router.beforeEach(async (to, from, next) => {
     const currentUser = store.getters['auth/currentUser'];
-    const loggedIn = store.getters['auth/loggedIn'];
-    const isAdmin = store.getters['auth/isAdmin'];
 
     if (currentUser?.token && AuthService.isTokenExpired(currentUser.token)) {
-        AuthService.forceLogout('Ihre Sitzung ist abgelaufen. Bitte melden Sie sich erneut an.');
-        store.commit('auth/logout');
+        try {
+            await store.dispatch('auth/restoreSession');
+        } catch {
+            if (to.path !== '/login') {
+                next('/login');
+                return;
+            }
+        }
     }
 
     const effectiveLoggedIn = store.getters['auth/loggedIn'];
+    const isAdmin = store.getters['auth/isAdmin'];
 
     if (to.meta.requiresAdmin) {
         if (!effectiveLoggedIn) {

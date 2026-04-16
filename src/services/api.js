@@ -63,12 +63,11 @@ api.interceptors.response.use(
                 const updatedUser = await AuthService.refreshToken();
                 store.commit('auth/loginSuccess', updatedUser);
                 resolvePendingRequests(null, updatedUser.token);
-
                 originalRequest.headers.Authorization = `Bearer ${updatedUser.token}`;
                 return api(originalRequest);
             } catch (refreshError) {
                 resolvePendingRequests(refreshError, null);
-                AuthService.forceLogout('Ihre Sitzung ist abgelaufen. Bitte melden Sie sich erneut an.');
+                AuthService.forceLogout('Ihre Sitzung ist abgelaufen.\nBitte melden Sie sich erneut an.');
                 store.commit('auth/logout');
 
                 if (router.currentRoute.value.path !== '/login') {
@@ -81,8 +80,8 @@ api.interceptors.response.use(
             }
         }
 
-        if (status === 401 && (isRefreshCall || isLoginCall === false)) {
-            AuthService.forceLogout('Ihre Sitzung ist abgelaufen. Bitte melden Sie sich erneut an.');
+        if (status === 401 && isRefreshCall) {
+            AuthService.forceLogout('Ihre Sitzung ist abgelaufen.\nBitte melden Sie sich erneut an.');
             store.commit('auth/logout');
 
             if (router.currentRoute.value.path !== '/login') {
