@@ -118,7 +118,7 @@
                 :key="column.id"
                 class="board-column"
                 :class="{
-                'drop-highlight': hoveredTaskColumnId === Number(column.id),
+                'drop-highlight': hoveredTaskColumnId === Number(column.id) && hoveredTaskBeforeTaskId == null,
                 'column-drop-highlight': hoveredColumnDropId === Number(column.id)
               }"
                 @dragover.prevent="onCombinedDragOver(column.id, $event)"
@@ -188,16 +188,35 @@
                     Keine Tasks in dieser Spalte.
                   </div>
 
-                  <div class="d-flex flex-column gap-3">
-                    <task-board-card
+                  <div class="d-flex flex-column gap-2">
+                    <div
                         v-for="task in tasksByColumn(column.id)"
                         :key="task.id"
-                        :task="task"
-                        @open-details="openTaskDetails"
-                        @time-tracking-changed="handleTaskChanged"
-                        @drag-started="onTaskDragStarted"
-                        @drag-ended="onTaskDragEnded"
-                    />
+                        class="task-drop-wrapper"
+                    >
+                      <div
+                          class="task-insert-indicator"
+                          :class="{ active: isTaskInsertIndicatorActive(column.id, task.id) }"
+                          @dragover.prevent.stop="onTaskCardDragOver(column.id, task.id, $event)"
+                          @drop.stop="handleTaskCardDrop(column.id, task.id, $event)"
+                      ></div>
+
+                      <task-board-card
+                          :task="task"
+                          @open-details="openTaskDetails"
+                          @time-tracking-changed="handleTaskChanged"
+                          @drag-started="onTaskDragStarted"
+                          @drag-ended="onTaskDragEnded"
+                          @toggle-favorite="toggleTaskFavorite"
+                      />
+                    </div>
+
+                    <div
+                        class="task-insert-indicator task-insert-indicator-end"
+                        :class="{ active: isColumnEndInsertIndicatorActive(column.id) }"
+                        @dragover.prevent.stop="onTaskColumnDragOver(column.id, $event)"
+                        @drop.stop="handleTaskDrop(column.id, $event)"
+                    ></div>
                   </div>
                 </div>
               </div>
@@ -535,9 +554,10 @@ export default {
       tasks: [],
       selectedProjectId: null,
 
-
       draggedTaskId: null,
+      draggedSourceColumnId: null,
       hoveredTaskColumnId: null,
+      hoveredTaskBeforeTaskId: null,
 
       draggedColumnId: null,
       hoveredColumnDropId: null,
@@ -734,7 +754,18 @@ export default {
     },
 
     tasksByColumn(columnId) {
-      return this.tasks.filter(task => this.getTaskColumnId(task) === Number(columnId));
+      return this.tasks
+          .filter(task => this.getTaskColumnId(task) === Number(columnId))
+          .sort((a, b) => {
+            const posA = a.position ?? 0;
+            const posB = b.position ?? 0;
+
+            if (posA !== posB) {
+              return posA - posB;
+            }
+
+            return (a.id ?? 0) - (b.id ?? 0);
+          });
     },
 
     async handleTaskChanged() {
@@ -767,12 +798,17 @@ export default {
 
     onTaskDragStarted(task) {
       this.draggedTaskId = Number(task?.id);
+      this.draggedSourceColumnId = Number(task?.boardColumnId ?? this.getTaskColumnId(task));
       this.hoveredColumnDropId = null;
+      this.hoveredTaskColumnId = null;
+      this.hoveredTaskBeforeTaskId = null;
     },
 
     onTaskDragEnded() {
       this.draggedTaskId = null;
+      this.draggedSourceColumnId = null;
       this.hoveredTaskColumnId = null;
+      this.hoveredTaskBeforeTaskId = null;
     },
 
     onTaskColumnDragOver(columnId, event) {
@@ -782,6 +818,70 @@ export default {
 
       event.dataTransfer.dropEffect = 'move';
       this.hoveredTaskColumnId = Number(columnId);
+      this.hoveredTaskBeforeTaskId = null;
+    },
+
+    onTaskCardDragOver(columnId, beforeTaskId, event) {
+      if (!this.draggedTaskId) {
+        return;
+      }
+
+      event.dataTransfer.dropEffect = 'move';
+      this.hoveredTaskColumnId = Number(columnId);
+      this.hoveredTaskBeforeTaskId = Number(beforeTaskId);
+    },
+
+    async handleTaskCardDrop(targetColumnId, beforeTaskId, event) {
+      event.preventDefault();
+
+      const taskId = Number(event.dataTransfer?.getData('text/plain') || this.draggedTaskId);
+      const sourceColumnId = Number(this.draggedSourceColumnId);
+
+      this.hoveredTaskColumnId = null;
+      this.hoveredTaskBeforeTaskId = null;
+
+      if (!taskId || !sourceColumnId) {
+        this.draggedTaskId = null;
+        this.draggedSourceColumnId = null;
+        return;
+      }
+
+      try {
+        if (sourceColumnId === Number(targetColumnId)) {
+          const orderedTaskIds = this.buildOrderedTaskIdsForColumn(targetColumnId, {
+            excludeTaskId: taskId,
+            insertTaskId: taskId,
+            insertBeforeTaskId: beforeTaskId
+          });
+
+          await TaskService.reorderTasksInColumn(this.selectedProjectId, targetColumnId, orderedTaskIds);
+        } else {
+          const sourceTaskIds = this.buildOrderedTaskIdsForColumn(sourceColumnId, {
+            excludeTaskId: taskId
+          });
+
+          const targetTaskIds = this.buildOrderedTaskIdsForColumn(targetColumnId, {
+            insertTaskId: taskId,
+            insertBeforeTaskId: beforeTaskId
+          });
+
+          await TaskService.moveTaskBetweenColumns(
+              this.selectedProjectId,
+              sourceColumnId,
+              Number(targetColumnId),
+              sourceTaskIds,
+              targetTaskIds
+          );
+        }
+
+        this.statusMessage = 'Task wurde neu angeordnet.';
+        await this.reloadBoard();
+      } catch (error) {
+        this.errorMessage = this.extractErrorMessage(error, 'Task konnte nicht neu angeordnet werden.');
+      } finally {
+        this.draggedTaskId = null;
+        this.draggedSourceColumnId = null;
+      }
     },
 
     onTaskColumnDragLeave(columnId, event) {
@@ -829,27 +929,52 @@ export default {
       event.preventDefault();
 
       const taskId = Number(event.dataTransfer?.getData('text/plain') || this.draggedTaskId);
+      const sourceColumnId = Number(this.draggedSourceColumnId);
+
       this.hoveredTaskColumnId = null;
+      this.hoveredTaskBeforeTaskId = null;
 
-      if (!taskId) {
+      if (!taskId || !sourceColumnId) {
         this.draggedTaskId = null;
-        return;
-      }
-
-      const task = this.tasks.find(item => Number(item.id) === taskId);
-      if (!task || this.getTaskColumnId(task) === Number(targetColumnId)) {
-        this.draggedTaskId = null;
+        this.draggedSourceColumnId = null;
         return;
       }
 
       try {
-        await TaskService.moveTask(taskId, targetColumnId);
+        if (sourceColumnId === Number(targetColumnId)) {
+          const targetTaskIds = this.buildOrderedTaskIdsForColumn(targetColumnId, {
+            excludeTaskId: taskId,
+            insertTaskId: taskId,
+            insertBeforeTaskId: null
+          });
+
+          await TaskService.reorderTasksInColumn(this.selectedProject.id, targetColumnId, targetTaskIds);
+        } else {
+          const sourceTaskIds = this.buildOrderedTaskIdsForColumn(sourceColumnId, {
+            excludeTaskId: taskId
+          });
+
+          const targetTaskIds = this.buildOrderedTaskIdsForColumn(targetColumnId, {
+            insertTaskId: taskId,
+            insertBeforeTaskId: null
+          });
+
+          await TaskService.moveTaskBetweenColumns(
+              this.selectedProject.id,
+              sourceColumnId,
+              Number(targetColumnId),
+              sourceTaskIds,
+              targetTaskIds
+          );
+        }
+
         this.statusMessage = 'Task wurde verschoben.';
         await this.reloadBoard();
       } catch (error) {
         this.errorMessage = this.extractErrorMessage(error, 'Task konnte nicht verschoben werden.');
       } finally {
         this.draggedTaskId = null;
+        this.draggedSourceColumnId = null;
       }
     },
 
@@ -922,6 +1047,52 @@ export default {
       }
     },
 
+    isTaskInsertIndicatorActive(columnId, beforeTaskId) {
+      return Number(this.hoveredTaskColumnId) === Number(columnId)
+          && Number(this.hoveredTaskBeforeTaskId) === Number(beforeTaskId);
+    },
+
+    isColumnEndInsertIndicatorActive(columnId) {
+      return Number(this.hoveredTaskColumnId) === Number(columnId)
+          && (this.hoveredTaskBeforeTaskId === null || this.hoveredTaskBeforeTaskId === undefined);
+    },
+
+    buildOrderedTaskIdsForColumn(columnId, options = {}) {
+      const {
+        excludeTaskId = null,
+        insertTaskId = null,
+        insertBeforeTaskId = null
+      } = options;
+
+      const ordered = this.tasksByColumn(columnId)
+          .filter(task => Number(task.id) !== Number(excludeTaskId))
+          .map(task => Number(task.id));
+
+      if (insertTaskId == null) {
+        return ordered;
+      }
+
+      if (insertBeforeTaskId == null) {
+        ordered.push(Number(insertTaskId));
+        return ordered;
+      }
+
+      const index = ordered.findIndex(id => Number(id) === Number(insertBeforeTaskId));
+
+      if (index < 0) {
+        ordered.push(Number(insertTaskId));
+      } else {
+        ordered.splice(index, 0, Number(insertTaskId));
+      }
+
+      return ordered;
+    },
+
+    isTaskDropTarget(columnId, taskId) {
+      return Number(this.hoveredTaskColumnId) === Number(columnId)
+          && Number(this.hoveredTaskBeforeTaskId) === Number(taskId);
+    },
+
     async handleCombinedDrop(targetColumnId, event) {
       const draggedColumnId = event.dataTransfer?.getData('application/x-board-column-id');
       if (draggedColumnId) {
@@ -930,6 +1101,15 @@ export default {
       }
 
       await this.handleTaskDrop(targetColumnId, event);
+    },
+
+    async toggleTaskFavorite(task) {
+      try {
+        await TaskService.setFavorite(task.id, !task.favorite);
+        await this.reloadBoard();
+      } catch (error) {
+        this.errorMessage = this.extractErrorMessage(error, 'Favorit konnte nicht geändert werden.');
+      }
     },
 
     addCreateReminder() {
@@ -1229,6 +1409,40 @@ export default {
   align-items: center;
   justify-content: space-between;
   gap: 0.75rem;
+}
+
+.task-drop-wrapper {
+  position: relative;
+}
+
+.task-column-end-drop-zone {
+  min-height: 1.5rem;
+  border-radius: 0.5rem;
+}
+
+.task-insert-indicator {
+  height: 12px;
+  border-radius: 999px;
+  transition: background-color 0.12s ease, transform 0.12s ease, opacity 0.12s ease;
+  opacity: 0;
+  margin: 0.2rem 0;
+  pointer-events: auto;
+}
+
+.task-insert-indicator.active {
+  opacity: 1;
+  background: rgba(13, 110, 253, 1);
+  transform: scaleY(1.25);
+  box-shadow: 0 0 0 3px rgba(13, 110, 253, 0.15);
+}
+
+.task-insert-indicator-end {
+  min-height: 18px;
+}
+
+.task-drop-target {
+  outline: 2px solid rgba(13, 110, 253, 0.35);
+  outline-offset: 2px;
 }
 
 @media (max-width: 991.98px) {

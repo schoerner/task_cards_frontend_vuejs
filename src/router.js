@@ -14,6 +14,7 @@ import MyOwnedProjectManager from '@/components/MyOwnedProjectManager.vue';
 import ProjectMemberOverview from '@/components/ProjectMemberOverview.vue';
 import UserManagement from '@/components/UserManagement.vue';
 
+const FocusPage = () => import('@/components/FocusPage.vue');
 const UserProfile = () => import('@/components/UserProfile.vue');
 const UserProfiles = () => import('@/components/UserProfiles.vue');
 
@@ -24,6 +25,7 @@ const routes = [
     { path: '/user-management', component: UserManagement, meta: { requiresAdmin: true } },
     { path: '/boards', component: Boards, meta: { requiresAuth: true } },
     { path: '/calendar', component: TaskCalendar, meta: { requiresAuth: true } },
+    { path: '/focus', component: FocusPage, meta: { requiresAuth: true } },
     { path: '/projects', component: MyOwnedProjectManager, meta: { requiresAuth: true } },
     { path: '/projects/member', component: ProjectMemberOverview, meta: { requiresAuth: true } },
     { path: '/login', component: UserLogin },

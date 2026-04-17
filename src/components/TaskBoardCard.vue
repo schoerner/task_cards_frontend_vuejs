@@ -34,6 +34,15 @@
         </div>
 
         <div class="d-flex flex-column align-items-end gap-1">
+          <button
+              class="btn btn-sm btn-light favorite-btn"
+              type="button"
+              :title="task.favorite ? 'Favorit entfernen' : 'Als Favorit markieren'"
+              @click.stop="$emit('toggle-favorite', task)"
+          >
+            <i :class="task.favorite ? 'bi bi-star-fill text-warning' : 'bi bi-star'"></i>
+          </button>
+
           <span class="badge" :class="priorityBadgeClass(task.priority)">
             {{ task.priority || 'MEDIUM' }}
           </span>
@@ -101,7 +110,7 @@ export default {
       required: true
     }
   },
-  emits: ['open-details', 'time-tracking-changed', 'drag-started', 'drag-ended'],
+  emits: ['open-details', 'time-tracking-changed', 'drag-started', 'drag-ended', 'toggle-favorite'],
   data() {
     return {
       busy: false,
@@ -202,8 +211,8 @@ export default {
 }
 
 .active-task-card {
-  background: rgba(25, 135, 84, 0.06);
-  box-shadow: 0 0.3rem 0.8rem rgba(25, 135, 84, 0.16);
+  background: rgba(25, 135, 84, 0.12);
+  box-shadow: 0 0.35rem 0.95rem rgba(25, 135, 84, 0.22);
 }
 
 .drag-handle {
@@ -218,5 +227,10 @@ export default {
 
 .min-w-0 {
   min-width: 0;
+}
+
+.favorite-btn {
+  line-height: 1;
+  padding: 0.2rem 0.45rem;
 }
 </style>

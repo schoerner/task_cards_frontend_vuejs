@@ -26,7 +26,12 @@
             <div class="d-flex flex-column flex-lg-row gap-3">
 
               <div v-if="isUser || isAdmin || isModerator" class="btn-toolbar" role="toolbar" aria-label="Projekt-Navigation">
-                <div class="btn-group nav-btn-group" role="group" aria-label="Projekt-Bereich">
+                <div class="btn-group nav-btn-group" role="group" aria-label="Fokus">
+                  <router-link to="/focus" class="btn nav-group-btn">
+                    <i class="bi bi-binoculars"></i>
+                    <span class="nav-btn-label">Fokus</span>
+                  </router-link>
+
                   <router-link to="/boards" class="btn nav-group-btn">
                     <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-kanban-fill" viewBox="0 0 16 16">
                       <path d="M2.5 0a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h11a2 2 0 0 0 2-2V2a2 2 0 0 0-2-2zm5 2h1a1 1 0 0 1 1 1v3a1 1 0 0 1-1 1h-1a1 1 0 0 1-1-1V3a1 1 0 0 1 1-1m-5 1a1 1 0 0 1 1-1h1a1 1 0 0 1 1 1v7a1 1 0 0 1-1 1h-1a1 1 0 0 1-1-1zm9-1h1a1 1 0 0 1 1 1v10a1 1 0 0 1-1 1h-1a1 1 0 0 1-1-1V3a1 1 0 0 1 1-1"/>

@@ -33,12 +33,29 @@ class TaskService {
         return api.put(`${API_URL}/${taskId}`, payload);
     }
 
-    moveTask(taskId, boardColumnId) {
+    reorderTasksInColumn(projectId, boardColumnId, taskIds) {
         return api.patch(
-            `${API_URL}/${taskId}/move`,
-            null,
-            { params: { boardColumnId } }
+            `${TaskAppConfig.baseUrl()}/projects/${projectId}/board-columns/${boardColumnId}/task-order`,
+            { taskIds }
         );
+    }
+
+    moveTaskBetweenColumns(projectId, sourceColumnId, targetColumnId, sourceTaskIds, targetTaskIds) {
+        return api.patch(
+            `${TaskAppConfig.baseUrl()}/projects/${projectId}/task-order/move-between-columns`,
+            {
+                sourceColumnId,
+                targetColumnId,
+                sourceTaskIds,
+                targetTaskIds
+            }
+        );
+    }
+
+    setFavorite(taskId, favorite) {
+        return api.patch(`${API_URL}/${taskId}/favorite`, null, {
+            params: { favorite }
+        });
     }
 
     archiveTask(taskId) {
@@ -67,6 +84,10 @@ class TaskService {
 
     stopTimeTracking(taskId) {
         return api.post(`${API_URL}/${taskId}/time-tracking/stop`, {});
+    }
+
+    getFocusTasks(limit = 10) {
+        return api.get(`${API_URL}/focus`, { params: { limit } });
     }
 
     getMyCalendarTasks() {
