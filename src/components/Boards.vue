@@ -286,8 +286,13 @@
                 </div>
 
                 <div class="col-12">
-                  <label class="form-label">Beschreibung</label>
-                  <textarea v-model.trim="createTaskForm.description" class="form-control" rows="4"></textarea>
+                  <MarkdownEditorWithPreview
+                      v-model="createTaskForm.description"
+                      label="Beschreibung"
+                      :rows="5"
+                      empty-preview-text="Noch keine Beschreibung vorhanden."
+                      placeholder="Beschreibung der Task in Markdown..."
+                  />
                 </div>
 
                 <div class="col-md-4">
@@ -531,6 +536,7 @@ import BoardColumnService from '@/services/board-column.service.js';
 import TaskService from '@/services/task.service.js';
 import TaskBoardCard from '@/components/TaskBoardCard.vue';
 import TaskDetailsModal from '@/components/TaskDetailsModal.vue';
+import MarkdownEditorWithPreview from '@/components/MarkdownEditorWithPreview.vue';
 
 export default {
   name: 'Boards',
@@ -538,7 +544,8 @@ export default {
     TaskBoardCard,
     TaskDetailsModal,
     CreateProject,
-    EditProject
+    EditProject,
+    MarkdownEditorWithPreview
   },
   data() {
     return {

@@ -166,7 +166,18 @@ export default {
     formatDate(value) {
       if (!value) return '-';
 
-      const date = new Date(value);
+      const normalized = String(value).replace('T', ' ').replace('Z', '');
+      const [datePart, timePartRaw] = normalized.split(' ');
+
+      if (!datePart || !timePartRaw) {
+        return value;
+      }
+
+      const [year, month, day] = datePart.split('-').map(Number);
+      const [hours = 0, minutes = 0, seconds = 0] = timePartRaw.split(':').map(Number);
+
+      const date = new Date(year, month - 1, day, hours, minutes, seconds);
+
       return new Intl.DateTimeFormat('de-DE', {
         dateStyle: 'medium',
         timeStyle: 'medium',

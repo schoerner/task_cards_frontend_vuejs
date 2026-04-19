@@ -467,6 +467,14 @@
         </div>
 
         <div class="modal-footer">
+          <button
+            v-if="taskId"
+            type="button"
+            class="btn btn-outline-primary"
+            @click="openPollBuilder"
+          >
+            Terminabfrage öffnen
+          </button>
           <button class="btn btn-secondary" @click="hide">Schließen</button>
         </div>
       </div>
@@ -866,6 +874,23 @@ export default {
       this.commentForm.content = '';
       this.modalInnerError = '';
       this.cleanupModalArtifacts();
+    },
+
+    openPollBuilder() {
+      if (!this.taskId) {
+        return;
+      }
+
+      this.hide();
+
+      this.$nextTick(() => {
+        this.$router.push({
+          path: '/polls',
+          query: {
+            taskId: String(this.taskId)
+          }
+        });
+      });
     },
 
     cleanupModalArtifacts() {

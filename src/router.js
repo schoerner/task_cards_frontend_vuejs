@@ -13,6 +13,8 @@ import Welcome from '@/components/Welcome.vue';
 import MyOwnedProjectManager from '@/components/MyOwnedProjectManager.vue';
 import ProjectMemberOverview from '@/components/ProjectMemberOverview.vue';
 import UserManagement from '@/components/UserManagement.vue';
+import TaskPollBuilder from '@/components/TaskPollBuilder.vue';
+import TaskPollPublicPage from '@/components/TaskPollPublicPage.vue';
 
 const FocusPage = () => import('@/components/FocusPage.vue');
 const UserProfile = () => import('@/components/UserProfile.vue');
@@ -26,6 +28,8 @@ const routes = [
     { path: '/boards', component: Boards, meta: { requiresAuth: true } },
     { path: '/calendar', component: TaskCalendar, meta: { requiresAuth: true } },
     { path: '/focus', component: FocusPage, meta: { requiresAuth: true } },
+    { path: '/polls', component: TaskPollBuilder, meta: { requiresAuth: true } },
+    { path: '/polls/respond/:token', component: TaskPollPublicPage, meta: { requiresAuth: false } },
     { path: '/projects', component: MyOwnedProjectManager, meta: { requiresAuth: true } },
     { path: '/projects/member', component: ProjectMemberOverview, meta: { requiresAuth: true } },
     { path: '/login', component: UserLogin },

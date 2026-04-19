@@ -39,6 +39,11 @@
                     <span class="nav-btn-label">Boards</span>
                   </router-link>
 
+                  <router-link to="/polls" class="btn nav-group-btn">
+                    <i class="bi bi-calendar2-week"></i>
+                    <span class="nav-btn-label">Terminabfragen</span>
+                  </router-link>
+
                   <router-link to="/calendar" class="btn nav-group-btn">
                     <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-calendar3" viewBox="0 0 16 16">
                       <path d="M14 0a1 1 0 0 1 1 1v1h-1V1H2v1H1V1a1 1 0 0 1 1-1h1v1a1 1 0 1 0 2 0V0h6v1a1 1 0 1 0 2 0V0z"/>
