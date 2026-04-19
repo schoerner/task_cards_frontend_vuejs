@@ -157,7 +157,7 @@ export default {
 
     formatDate(value) {
       try {
-        return new Date(value).toLocaleString('de-DE');
+        return new Date(value).toLocaleString('de-DE', { weekday: 'short', day: '2-digit', month: '2-digit', year: '2-digit', hour: '2-digit', minute: '2-digit' }) + ' Uhr';
       } catch {
         return value;
       }

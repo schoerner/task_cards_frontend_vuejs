@@ -28,7 +28,7 @@
         </button>
 
         <button type="button" class="btn btn-outline-primary" @click="sendInvitations" :disabled="loading || saving || !backendMode">
-          Einladungen senden
+          Terminabfrage versenden
         </button>
 
         <button type="button" class="btn btn-outline-secondary" @click="sendReminders" :disabled="loading || saving || !backendMode">
@@ -147,9 +147,9 @@
         <div class="card-body">
           <div class="d-flex flex-wrap justify-content-between align-items-start gap-3 mb-3">
             <div>
-              <div class="fw-semibold">Heatmap-Vorschau</div>
+              <div class="fw-semibold">Termin aus Verfügbarkeiten festlegen</div>
               <div class="small text-muted">
-                Klicke einen Slot in der Heatmap an, um ihn als Vorschlag für die Finalisierung zu übernehmen.
+                Wähle einen Slot aus der Heatmap aus, um daraus den gemeinsamen Termin für die Task zu übernehmen.
               </div>
             </div>
 
@@ -168,7 +168,7 @@
                 :disabled="loading || saving || !backendMode || !selectedHeatmapSlot"
                 @click="finalizeSelectedSlot"
               >
-                Gewählten Slot finalisieren
+                Termin übernehmen
               </button>
             </div>
           </div>
@@ -178,6 +178,8 @@
             :heatmap="heatmap"
             :selectable="true"
             :selected-slot-start-at="selectedHeatmapSlotStartAt"
+            title="Aktuelle Heatmap mit Verfügbarkeiten"
+            subtitle="Bewertung: „Kann“ zählt 2 Punkte, „Bedingt“ 1 Punkt, „Kann nicht“ 0 Punkte. Ein Gesamtwert von 2 kann also auch aus zwei bedingten Zusagen entstehen."
             @select-slot="selectedHeatmapSlotStartAt = $event.slotStartAt"
           />
         </div>
@@ -185,11 +187,13 @@
     </div>
 
     <AppConfirmModal ref="confirmModal" />
+    <TaskPollMailComposerModal ref="mailComposerModal" />
   </div>
 </template>
 
 <script>
 import AppConfirmModal from '@/components/AppConfirmModal.vue';
+import TaskPollMailComposerModal from '@/components/TaskPollMailComposerModal.vue';
 import MarkdownEditorWithPreview from '@/components/MarkdownEditorWithPreview.vue';
 import TaskPollAvailabilityGrid from '@/components/TaskPollAvailabilityGrid.vue';
 import TaskPollHeatmap from '@/components/TaskPollHeatmap.vue';
@@ -212,6 +216,7 @@ export default {
   name: 'TaskPollBuilder',
   components: {
     AppConfirmModal,
+    TaskPollMailComposerModal,
     MarkdownEditorWithPreview,
     TaskPollAvailabilityGrid,
     TaskPollHeatmap,
@@ -235,7 +240,7 @@ export default {
   },
   computed: {
     currentTaskId() {
-      return Number(this.$route.query.taskId || 0) || null;
+      return Number(this.$route.params.taskId || this.$route.query.taskId || 0) || null;
     },
     backendMode() {
       return !!this.currentTaskId;
@@ -281,7 +286,7 @@ export default {
     }
   },
   watch: {
-    '$route.query.taskId': {
+    '$route.fullPath': {
       immediate: true,
       handler() {
         this.reloadFromSource();
@@ -449,27 +454,115 @@ export default {
       };
     },
 
-    async persistPoll({ skipStructuralConfirmation = false } = {}) {
+    async persistPoll({ skipStructuralConfirmation = false, structuralSaveMode = null } = {}) {
       if (!this.backendMode) {
         return null;
       }
 
+      let effectiveSaveMode = structuralSaveMode;
+
       if (!skipStructuralConfirmation && this.hasStructuralPollChanges()) {
-        const confirmed = await this.confirmAction({
+        effectiveSaveMode = await this.confirmAction({
           title: 'Basis-Einstellungen geändert',
-          message: 'Du hast Basis-Einstellungen der Terminabfrage geändert. Dadurch werden bereits abgegebene Verfügbarkeiten zurückgesetzt.\n\nWirklich speichern?',
-          confirmLabel: 'Trotzdem speichern',
-          confirmVariant: 'warning'
+          message: 'Du hast Basis-Einstellungen der Terminabfrage geändert. Bereits abgegebene Verfügbarkeiten werden dadurch zurückgesetzt.\n\nWie möchtest du fortfahren?',
+          buttons: [
+            { value: 'save', label: 'Ja, Terminabfrage nur speichern', variant: 'warning' },
+            { value: 'save-and-send', label: 'Speichern und Terminabfrage direkt neu versenden', variant: 'primary' },
+            { value: 'cancel', label: 'Abbrechen', variant: 'secondary' }
+          ],
+          defaultResolveValue: 'cancel'
         });
 
-        if (!confirmed) {
+        if (!effectiveSaveMode || effectiveSaveMode === 'cancel') {
           return null;
         }
       }
 
       const response = await TaskPollService.savePoll(this.currentTaskId, this.toUpsertPayload());
       this.applyBackendPayload(response.data);
+
+      if (effectiveSaveMode === 'save-and-send') {
+        const invitationPayload = await this.openInvitationComposer();
+        if (!invitationPayload) {
+          return response;
+        }
+        await TaskPollService.sendInvitations(this.currentTaskId, invitationPayload);
+        await this.reloadFromSource();
+        this.statusMessage = 'Terminabfrage wurde gespeichert und direkt neu versendet.';
+      }
+
       return response;
+    },
+
+    buildInvitationDefaultMessage() {
+      return [
+        `Hallo,`,
+        '',
+        `ich habe die Terminabfrage **${this.pollDraft.title || 'Terminabfrage'}** aktualisiert.`,
+        '',
+        `Bitte trage deine Verfügbarkeit über den bekannten Link ein oder aktualisiere deine Angaben dort noch einmal.`,
+        '',
+        `Vielen Dank!`
+].join('\n');
+    },
+
+    buildReminderDefaultMessage() {
+      return [
+        'Hallo,',
+        '',
+        `zur Terminabfrage **${this.pollDraft.title || 'Terminabfrage'}** steht deine Rückmeldung noch aus.`,
+        '',
+        'Bitte öffne den Link aus der Einladung und ergänze deine Verfügbarkeit.',
+        '',
+        'Vielen Dank!'
+].join('\n');
+    },
+
+    buildFinalizationDefaultMessage(slot) {
+      return [
+        'Hallo,',
+        '',
+        `die Terminabfrage **${this.pollDraft.title || 'Terminabfrage'}** ergab für folgenden Slot die höchste Übereinstimmung:`,
+        '',
+        `**${slot.date} ${slot.time}–${slot.endTime} Uhr**`,
+        '',
+        'Diesen Termin habe ich jetzt für die zugehörige Task übernommen.',
+        '',
+        'Viele Grüße'
+].join('\n');
+    },
+
+    async openInvitationComposer() {
+      return this.$refs.mailComposerModal.show({
+        title: 'Terminabfrage versenden',
+        lead: 'Formuliere die Nachricht, die zusammen mit dem persönlichen Teilnahmelink als HTML-Mail verschickt werden soll.',
+        subject: `Terminabfrage: ${this.pollDraft.title || 'Bitte Verfügbarkeit eintragen'}`,
+        messageMarkdown: this.buildInvitationDefaultMessage(),
+        placeholder: 'Kurze Einladung, Agenda, Ort oder Hinweise zur Terminabfrage …',
+        submitLabel: 'Terminabfrage versenden'
+      });
+    },
+
+    async openReminderComposer() {
+      return this.$refs.mailComposerModal.show({
+        title: 'Reminder versenden',
+        lead: 'Diese Nachricht wird an alle Teilnehmenden verschickt, die noch nicht geantwortet haben.',
+        subject: `Erinnerung zur Terminabfrage: ${this.pollDraft.title || ''}`.trim(),
+        messageMarkdown: this.buildReminderDefaultMessage(),
+        placeholder: 'Freundliche Erinnerung formulieren …',
+        submitLabel: 'Reminder senden'
+      });
+    },
+
+    async openFinalizationComposer(slot) {
+      return this.$refs.mailComposerModal.show({
+        title: 'Terminbestätigung verfassen',
+        lead: 'Optional kannst du direkt eine HTML-Mail an alle Teilnehmenden mit dem finalen Termin verschicken.',
+        subject: `Termin steht fest: ${this.pollDraft.title || 'Terminabfrage'}`,
+        messageMarkdown: this.buildFinalizationDefaultMessage(slot),
+        placeholder: 'Zusätzliche Hinweise zum gemeinsamen Termin …',
+        submitLabel: 'Terminbestätigung senden'
+      });
     },
 
     async savePoll() {
@@ -513,8 +606,7 @@ export default {
 
       try {
         await TaskPollService.deletePoll(this.currentTaskId);
-        await this.reloadFromSource();
-        this.statusMessage = 'Terminabfrage wurde gelöscht.';
+        this.$router.push('/polls');
       } catch (error) {
         this.errorMessage = this.extractErrorMessage(error, 'Terminabfrage konnte nicht gelöscht werden.');
       } finally {
@@ -527,28 +619,22 @@ export default {
         return;
       }
 
-      const confirmed = await this.confirmAction({
-        title: 'Einladungen senden',
-        message: 'Sollen die Einladungsmails jetzt wirklich versendet werden?',
-        confirmLabel: 'Einladungen senden',
-        confirmVariant: 'primary'
-      });
-
-      if (!confirmed) {
+      const mailPayload = await this.openInvitationComposer();
+      if (!mailPayload) {
         return;
       }
 
       this.saving = true;
       this.errorMessage = '';
-      this.statusMessage = 'Einladungen werden versendet...';
+      this.statusMessage = 'Terminabfrage wird versendet...';
 
       try {
         await this.persistPoll({ skipStructuralConfirmation: true });
-        await TaskPollService.sendInvitations(this.currentTaskId);
+        await TaskPollService.sendInvitations(this.currentTaskId, mailPayload);
         await this.reloadFromSource();
-        this.statusMessage = 'Einladungen wurden versendet.';
+        this.statusMessage = 'Terminabfrage wurde versendet.';
       } catch (error) {
-        this.errorMessage = this.extractErrorMessage(error, 'Einladungen konnten nicht versendet werden.');
+        this.errorMessage = this.extractErrorMessage(error, 'Terminabfrage konnte nicht versendet werden.');
         this.statusMessage = '';
       } finally {
         this.saving = false;
@@ -562,18 +648,12 @@ export default {
 
       const hasInvitedParticipants = this.participants.some((participant) => !!participant.invitedAt);
       if (!hasInvitedParticipants) {
-        this.errorMessage = 'Reminder können erst gesendet werden, nachdem Einladungen verschickt wurden.';
+        this.errorMessage = 'Reminder können erst gesendet werden, nachdem die Terminabfrage verschickt wurde.';
         return;
       }
 
-      const confirmed = await this.confirmAction({
-        title: 'Reminder senden',
-        message: 'Sollen jetzt Reminder an alle noch offenen Teilnehmenden gesendet werden?',
-        confirmLabel: 'Reminder senden',
-        confirmVariant: 'secondary'
-      });
-
-      if (!confirmed) {
+      const mailPayload = await this.openReminderComposer();
+      if (!mailPayload) {
         return;
       }
 
@@ -582,7 +662,7 @@ export default {
       this.statusMessage = 'Reminder werden versendet...';
 
       try {
-        await TaskPollService.sendReminders(this.currentTaskId);
+        await TaskPollService.sendReminders(this.currentTaskId, mailPayload);
         await this.reloadFromSource();
         this.statusMessage = 'Reminder wurden versendet.';
       } catch (error) {
@@ -598,15 +678,29 @@ export default {
         return;
       }
 
-      const confirmed = await this.confirmAction({
-        title: 'Slot finalisieren',
-        message: `Soll der Slot ${this.selectedHeatmapSlot.date} ${this.selectedHeatmapSlot.time}–${this.selectedHeatmapSlot.endTime} als Termin in die Task übernommen werden?`,
-        confirmLabel: 'Finalisieren',
-        confirmVariant: 'success'
+      const slot = this.selectedHeatmapSlot;
+      const decision = await this.confirmAction({
+        title: 'Termin wirklich übernehmen?',
+        message: `Soll der Slot ${slot.date} ${slot.time}–${slot.endTime} als Termin in die zugehörige Task übernommen werden?`,
+        buttons: [
+          { value: 'stay', label: 'Ja, und auf dieser Seite bleiben', variant: 'success' },
+          { value: 'task', label: 'Ja, und zum zugehörigen Task weiterleiten', variant: 'primary' },
+          { value: 'notify', label: 'Ja, und Terminmail verfassen', variant: 'outline-primary', className: 'btn-outline-primary' },
+          { value: 'cancel', label: 'Abbrechen', variant: 'secondary' }
+        ],
+        defaultResolveValue: 'cancel'
       });
 
-      if (!confirmed) {
+      if (!decision || decision === 'cancel') {
         return;
+      }
+
+      let notificationPayload = null;
+      if (decision === 'notify') {
+        notificationPayload = await this.openFinalizationComposer(slot);
+        if (!notificationPayload) {
+          return;
+        }
       }
 
       this.saving = true;
@@ -614,7 +708,7 @@ export default {
       this.statusMessage = '';
 
       try {
-        const startAt = this.selectedHeatmapSlot.slotStartAt;
+        const startAt = slot.slotStartAt;
         const endAt = addMinutesToOffsetDateTime(startAt, this.pollDraft.slotMinutes);
 
         const response = await TaskPollService.finalizePoll(this.currentTaskId, {
@@ -623,9 +717,26 @@ export default {
         });
 
         this.applyBackendPayload(response.data);
-        this.statusMessage = 'Terminabfrage wurde finalisiert. Der Slot wurde als Vorschlag in die Task übernommen.';
+
+        if (notificationPayload) {
+          await TaskPollService.sendFinalizationNotification(this.currentTaskId, notificationPayload);
+          await this.reloadFromSource();
+          this.statusMessage = 'Termin wurde übernommen und die Terminbestätigung versendet.';
+        } else {
+          this.statusMessage = 'Termin wurde in die Task übernommen.';
+        }
+
+        if (decision === 'task') {
+          this.$router.push({
+            path: '/boards',
+            query: {
+              projectId: String(this.currentProjectId),
+              taskId: String(this.currentTaskId)
+            }
+          });
+        }
       } catch (error) {
-        this.errorMessage = this.extractErrorMessage(error, 'Termin konnte nicht finalisiert werden.');
+        this.errorMessage = this.extractErrorMessage(error, 'Termin konnte nicht übernommen werden.');
       } finally {
         this.saving = false;
       }

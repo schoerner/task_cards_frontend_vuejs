@@ -8,27 +8,7 @@
 </template>
 
 <script>
-import MarkdownIt from 'markdown-it';
-import { tasklist } from '@mdit/plugin-tasklist';
-import DOMPurify from 'dompurify';
-
-const mdReadonly = new MarkdownIt({
-  breaks: true,
-  linkify: true
-}).use(tasklist, {
-  disabled: true,
-  label: true,
-  labelAfter: true
-});
-
-const mdClickable = new MarkdownIt({
-  breaks: true,
-  linkify: true
-}).use(tasklist, {
-  disabled: false,
-  label: true,
-  labelAfter: true
-});
+import { normalizeMarkdownContent, renderMarkdownToSanitizedHtml } from '@/utils/markdown.utils.js';
 
 export default {
   name: 'MarkdownRenderedContent',
@@ -49,13 +29,7 @@ export default {
   emits: ['toggle-task-item'],
   computed: {
     normalizedContent() {
-      if (!this.content || !this.content.trim()) {
-        return '';
-      }
-
-      return this.content
-          .replace(/^\[\s\]\s+/gm, '- [ ] ')
-          .replace(/^\[[xX]\]\s+/gm, '- [x] ');
+      return normalizeMarkdownContent(this.content);
     },
     taskLineIndexes() {
       const indexes = [];
@@ -74,17 +48,10 @@ export default {
         return `<p class="mb-0 text-muted">${this.emptyText}</p>`;
       }
 
-      const renderer = this.clickableTaskLists ? mdClickable : mdReadonly;
-      let html = renderer.render(this.normalizedContent);
-
-      if (this.clickableTaskLists) {
-        html = html.replace(
-            /<input class="task-list-item-checkbox"([^>]*)\sdisabled(?:="[^"]*")?([^>]*)>/g,
-            '<input class="task-list-item-checkbox task-list-item-checkbox-clickable"$1$2>'
-        );
-      }
-
-      return DOMPurify.sanitize(html);
+      return renderMarkdownToSanitizedHtml(this.normalizedContent, {
+        clickableTaskLists: this.clickableTaskLists,
+        emptyText: this.emptyText
+      });
     }
   },
   methods: {

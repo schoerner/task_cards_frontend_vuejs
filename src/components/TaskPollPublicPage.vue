@@ -19,7 +19,7 @@
             Terminabfrage wird geladen...
           </div>
 
-          <div v-else>
+          <div v-else-if="isPollAvailable">
             <div class="mb-3">
               <label class="form-label">Name oder Pseudonym</label>
               <input v-model.trim="displayName" type="text" class="form-control" />
@@ -57,6 +57,8 @@
               :poll="poll"
               :heatmap="poll.heatmap"
               :selectable="false"
+              title="Aktuelle Heatmap"
+              subtitle="Bewertung: „Kann“ zählt 2 Punkte, „Bedingt“ 1 Punkt, „Kann nicht“ 0 Punkte. Ein Gesamtwert von 2 kann also auch aus zwei bedingten Zusagen entstehen."
             />
           </div>
         </div>
@@ -99,12 +101,16 @@ export default {
         slots: {}
       },
       displayName: '',
-      selectedMode: TaskPollFakeService.STATUS.AVAILABLE
+      selectedMode: TaskPollFakeService.STATUS.AVAILABLE,
+      pollLoadedSuccessfully: false
     };
   },
   computed: {
     token() {
       return this.$route.params.token;
+    },
+    isPollAvailable() {
+      return this.pollLoadedSuccessfully && !!this.poll?.slotMinutes && (this.poll?.includedDates?.length || 0) > 0;
     }
   },
   async mounted() {
@@ -131,10 +137,12 @@ export default {
     async loadPoll() {
       this.loading = true;
       this.errorMessage = '';
+      this.pollLoadedSuccessfully = false;
 
       try {
         const { data } = await TaskPollService.getPublicPoll(this.token);
         this.applyPublicPayload(data);
+        this.pollLoadedSuccessfully = true;
       } catch (error) {
         this.errorMessage =
           error?.response?.data?.detail ||
@@ -147,6 +155,10 @@ export default {
     },
 
     async saveResponse() {
+      if (!this.isPollAvailable) {
+        return;
+      }
+
       this.saving = true;
       this.errorMessage = '';
       this.statusMessage = '';

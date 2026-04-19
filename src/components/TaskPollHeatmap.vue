@@ -3,8 +3,8 @@
     <div class="card-body">
       <div class="d-flex flex-wrap justify-content-between align-items-center gap-3 mb-3">
         <div>
-          <h5 class="card-title mb-1">Heatmap-Vorschau</h5>
-          <div class="small text-muted">Mit Demo-Daten für 5 Teilnehmende und deinen eigenen Eingaben.</div>
+          <h5 class="card-title mb-1">{{ title }}</h5>
+          <div v-if="subtitle" class="small text-muted">{{ subtitle }}</div>
         </div>
 
         <div class="d-flex flex-wrap gap-3 small heatmap-legend">
@@ -79,6 +79,14 @@ export default {
     selectedSlotStartAt: {
       type: String,
       default: null
+    },
+    title: {
+      type: String,
+      default: 'Aktuelle Heatmap'
+    },
+    subtitle: {
+      type: String,
+      default: 'Bewertung: "Kann" zählt 2 Punkte, "Bedingt" 1 Punkt, "Kann nicht" 0 Punkte.'
     }
   },
   emits: ['select-slot'],

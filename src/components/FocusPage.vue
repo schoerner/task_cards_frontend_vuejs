@@ -34,27 +34,42 @@
         <div
             class="card h-100 shadow-sm focus-task-card"
             :class="{
-                'border-success active-focus-task-card': task.active
-              }"
+              'border-success active-focus-task-card': task.active
+            }"
             role="button"
-            @click="activateAndOpen(task)"
+            @click="toggleTracking(task)"
         >
           <div class="card-body">
             <div class="d-flex justify-content-between align-items-start gap-2 mb-2">
-              <h5 class="card-title mb-0">{{ task.title }}</h5>
-              <i :class="task.favorite ? 'bi bi-star-fill text-warning' : 'bi bi-star text-muted'"></i>
+              <h5 class="card-title mb-0 focus-task-title">{{ task.title }}</h5>
+              <div class="d-flex align-items-center gap-2 flex-shrink-0">
+                <i :class="task.favorite ? 'bi bi-star-fill text-warning' : 'bi bi-star text-muted'"></i>
+                <button
+                    type="button"
+                    class="btn btn-sm btn-outline-secondary focus-detail-button"
+                    title="Task-Details öffnen"
+                    aria-label="Task-Details öffnen"
+                    @click.stop="openTaskDetails(task)"
+                >
+                  <i class="bi bi-box-arrow-up-right"></i>
+                </button>
+              </div>
             </div>
 
-            <div class="small text-muted mb-2">
-              <div><strong>Priorität:</strong> {{ task.priority }}</div>
-              <div v-if="task.startAt"><strong>Start:</strong> {{ formatDate(task.startAt) }}</div>
-              <div v-if="task.dueDate"><strong>Fällig:</strong> {{ formatDate(task.dueDate) }}</div>
-              <div><strong>Getrackt:</strong> {{ task.trackedMinutes ?? 0 }} Min.</div>
+            <div class="d-flex flex-wrap gap-2 small text-muted focus-task-meta">
+              <span class="badge rounded-pill text-bg-light border" :title="`Priorität: ${priorityLabel(task.priority)}`">
+                <i :class="priorityIcon(task.priority)"></i>
+              </span>
+              <span class="badge rounded-pill text-bg-light border" :title="`Getrackt: ${task.trackedMinutes ?? 0} Minuten`">
+                <i class="bi bi-stopwatch me-1"></i>{{ formatTrackedMinutes(task.trackedMinutes) }}
+              </span>
+              <span v-if="task.startAt" class="badge rounded-pill text-bg-light border" :title="`Start: ${formatDate(task.startAt)}`">
+                <i class="bi bi-play-circle me-1"></i>{{ formatCompactDate(task.startAt) }}
+              </span>
+              <span v-if="task.dueDate" class="badge rounded-pill text-bg-light border" :title="`Fällig: ${formatDate(task.dueDate)}`">
+                <i class="bi bi-calendar-event me-1"></i>{{ formatCompactDate(task.dueDate) }}
+              </span>
             </div>
-
-            <p v-if="task.description" class="card-text small mb-0">
-              {{ truncate(task.description, 140) }}
-            </p>
           </div>
         </div>
       </div>
@@ -114,7 +129,6 @@ export default {
 
       try {
         const response = await TaskService.getFocusTasks(this.effectiveLimit);
-        // Sortieren
         this.tasks = [...(response.data || [])].sort((a, b) => {
           if (!!a.favorite !== !!b.favorite) {
             return a.favorite ? -1 : 1;
@@ -137,7 +151,7 @@ export default {
       }
     },
 
-    async activateAndOpen(task) {
+    async toggleTracking(task) {
       try {
         if (task.active) {
           await TaskService.stopTimeTracking(task.id);
@@ -146,7 +160,6 @@ export default {
         }
 
         await this.loadTasks();
-        await this.$refs.taskDetailsModal.open(task.id);
       } catch (error) {
         this.errorMessage =
             error?.response?.data?.detail ||
@@ -156,19 +169,68 @@ export default {
       }
     },
 
+    async openTaskDetails(task) {
+      try {
+        await this.$refs.taskDetailsModal.open(task.id);
+      } catch (error) {
+        this.errorMessage =
+            error?.response?.data?.detail ||
+            error?.response?.data?.message ||
+            error?.message ||
+            'Task-Details konnten nicht geöffnet werden.';
+      }
+    },
+
+    priorityIcon(priority) {
+      switch (priority) {
+        case 'HIGH':
+          return 'bi bi-exclamation-triangle-fill text-danger';
+        case 'MEDIUM':
+          return 'bi bi-exclamation-circle-fill text-warning';
+        case 'LOW':
+          return 'bi bi-arrow-down-circle text-success';
+        default:
+          return 'bi bi-circle text-muted';
+      }
+    },
+
+    priorityLabel(priority) {
+      switch (priority) {
+        case 'HIGH':
+          return 'Hoch';
+        case 'MEDIUM':
+          return 'Mittel';
+        case 'LOW':
+          return 'Niedrig';
+        default:
+          return priority || 'Unbekannt';
+      }
+    },
+
+    formatCompactDate(value) {
+      try {
+        return new Date(value).toLocaleString('de-DE', {
+          day: '2-digit',
+          month: '2-digit',
+          hour: '2-digit',
+          minute: '2-digit'
+        });
+      } catch {
+        return value;
+      }
+    },
+
+    formatTrackedMinutes(value) {
+      const minutes = Number(value || 0);
+      return `${minutes} Min.`;
+    },
+
     formatDate(value) {
       try {
         return new Date(value).toLocaleString('de-DE');
       } catch {
         return value;
       }
-    },
-
-    truncate(value, max) {
-      if (!value) {
-        return '';
-      }
-      return value.length > max ? `${value.slice(0, max)}...` : value;
     }
   }
 };
@@ -186,5 +248,17 @@ export default {
 .active-focus-task-card {
   background: rgba(25, 135, 84, 0.14);
   box-shadow: 0 0.35rem 1rem rgba(25, 135, 84, 0.22);
+}
+
+.focus-task-title {
+  line-height: 1.35;
+}
+
+.focus-task-meta .badge {
+  font-weight: 500;
+}
+
+.focus-detail-button {
+  min-width: 2rem;
 }
 </style>

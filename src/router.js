@@ -5,6 +5,7 @@ import AuthService from '@/services/auth.service';
 import About from '@/components/About.vue';
 import AdminBackups from '@/components/AdminBackups.vue';
 import Boards from '@/components/Boards.vue';
+import Datenschutz from './components/Datenschutz.vue'
 import TaskCalendar from '@/components/TaskCalendar.vue';
 import UserLogin from '@/components/UserLogin.vue';
 import UserSignUp from '@/components/UserSignUp.vue';
@@ -14,6 +15,7 @@ import MyOwnedProjectManager from '@/components/MyOwnedProjectManager.vue';
 import ProjectMemberOverview from '@/components/ProjectMemberOverview.vue';
 import UserManagement from '@/components/UserManagement.vue';
 import TaskPollBuilder from '@/components/TaskPollBuilder.vue';
+import TaskPollOverview from '@/components/TaskPollOverview.vue';
 import TaskPollPublicPage from '@/components/TaskPollPublicPage.vue';
 
 const FocusPage = () => import('@/components/FocusPage.vue');
@@ -28,7 +30,9 @@ const routes = [
     { path: '/boards', component: Boards, meta: { requiresAuth: true } },
     { path: '/calendar', component: TaskCalendar, meta: { requiresAuth: true } },
     { path: '/focus', component: FocusPage, meta: { requiresAuth: true } },
-    { path: '/polls', component: TaskPollBuilder, meta: { requiresAuth: true } },
+    { path: '/datenschutz', name: 'datenschutz', component: Datenschutz, meta: { title: 'Datenschutz' } },
+    { path: '/polls', component: TaskPollOverview, meta: { requiresAuth: true } },
+    { path: '/polls/task/:taskId', component: TaskPollBuilder, meta: { requiresAuth: true } },
     { path: '/polls/respond/:token', component: TaskPollPublicPage, meta: { requiresAuth: false } },
     { path: '/projects', component: MyOwnedProjectManager, meta: { requiresAuth: true } },
     { path: '/projects/member', component: ProjectMemberOverview, meta: { requiresAuth: true } },

@@ -18,6 +18,15 @@
                 archiviert
               </span>
             </div>
+            <div class="mt-3" v-if="taskId">
+              <button
+                type="button"
+                class="btn btn-sm btn-outline-primary"
+                @click="openPollBuilder"
+              >
+                Terminabfrage öffnen
+              </button>
+            </div>
           </div>
 
           <button type="button" class="btn-close" @click="hide"></button>
@@ -885,10 +894,7 @@ export default {
 
       this.$nextTick(() => {
         this.$router.push({
-          path: '/polls',
-          query: {
-            taskId: String(this.taskId)
-          }
+          path: `/polls/task/${this.taskId}`
         });
       });
     },

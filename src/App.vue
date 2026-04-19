@@ -1,7 +1,7 @@
 <template>
   <div class="app-wrapper">
     <header class="navbar navbar-expand-lg bd-navbar navbar-dark sticky-top">
-      <nav class="container-xxl bd-gutter flex-wrap flex-lg-nowrap" aria-label="Main navigation">
+      <nav ref="navbarWrapper" class="container-xxl bd-gutter flex-wrap flex-lg-nowrap" aria-label="Main navigation">
         <div class="d-lg-none" style="width: 2.25rem;"></div>
 
         <router-link to="/" class="navbar-brand">
@@ -11,16 +11,15 @@
         <button
             class="navbar-toggler"
             type="button"
-            data-bs-toggle="collapse"
-            data-bs-target="#navbarScroll"
             aria-controls="navbarScroll"
-            aria-expanded="false"
+            :aria-expanded="mobileMenuOpen ? 'true' : 'false'"
             aria-label="Toggle navigation"
+            @click="toggleMobileMenu"
         >
           <span class="navbar-toggler-icon"></span>
         </button>
 
-        <div class="collapse navbar-collapse" id="navbarScroll">
+        <div class="collapse navbar-collapse" :class="{ show: mobileMenuOpen }" id="navbarScroll">
           <div class="d-flex flex-column flex-lg-row w-100 justify-content-between align-items-lg-center gap-3">
 
             <div class="d-flex flex-column flex-lg-row gap-3">
@@ -119,7 +118,7 @@
                   </ul>
                 </div>
               </div>
-              </div>
+            </div>
 
             <div class="d-flex flex-column flex-lg-row gap-3 align-items-lg-center">
               <div v-if="!currentUser" class="btn-toolbar" role="toolbar" aria-label="Authentifizierung">
@@ -194,7 +193,10 @@
         <span>© 2007 - 2026 <i>ACoSci Tasks App</i> by Gernot Schörner</span>
         <div class="d-flex gap-3">
           <router-link to="/about">Über ACoSci Tasks</router-link>
+          <span class="mx-2">|</span>
           <router-link to="/impressum">Impressum</router-link>
+          <span class="mx-2">|</span>
+          <router-link to="/datenschutz">Datenschutz</router-link>
         </div>
       </div>
     </footer>
@@ -206,7 +208,8 @@ export default {
   data() {
     return {
       userMenuOpen: false,
-      adminMenuOpen: false
+      adminMenuOpen: false,
+      mobileMenuOpen: false
     };
   },
   computed: {
@@ -232,6 +235,16 @@ export default {
     document.removeEventListener("keydown", this.handleEscapeKey);
   },
   methods: {
+    toggleMobileMenu() {
+      this.mobileMenuOpen = !this.mobileMenuOpen;
+      if (!this.mobileMenuOpen) {
+        this.closeUserMenu();
+        this.closeAdminMenu();
+      }
+    },
+    closeMobileMenu() {
+      this.mobileMenuOpen = false;
+    },
     toggleUserMenu() {
       this.userMenuOpen = !this.userMenuOpen;
       if (this.userMenuOpen) {
@@ -251,8 +264,13 @@ export default {
       this.adminMenuOpen = false;
     },
     handleDocumentClick(event) {
+      const navbarWrapper = this.$refs.navbarWrapper;
       const userWrapper = this.$refs.userMenuWrapper;
       const adminWrapper = this.$refs.adminMenuWrapper;
+
+      if (navbarWrapper && !navbarWrapper.contains(event.target)) {
+        this.closeMobileMenu();
+      }
 
       if (userWrapper && !userWrapper.contains(event.target)) {
         this.closeUserMenu();
@@ -264,11 +282,13 @@ export default {
     },
     handleEscapeKey(event) {
       if (event.key === "Escape") {
+        this.closeMobileMenu();
         this.closeUserMenu();
         this.closeAdminMenu();
       }
     },
     logOut() {
+      this.closeMobileMenu();
       this.closeUserMenu();
       this.closeAdminMenu();
       this.$store.dispatch("auth/logout");
@@ -277,7 +297,9 @@ export default {
   },
   watch: {
     $route() {
+      this.closeMobileMenu();
       this.closeUserMenu();
+      this.closeAdminMenu();
     }
   }
 };

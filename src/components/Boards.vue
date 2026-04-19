@@ -627,6 +627,23 @@ export default {
       return this.sortedBoardColumns.filter(column => Number(column.id) !== Number(this.columnToDelete?.id));
     }
   },
+
+  watch: {
+    '$route.fullPath': {
+      async handler() {
+        const routeProjectId = Number(this.$route.query.projectId || 0) || null;
+        if (routeProjectId && Number(routeProjectId) !== Number(this.selectedProjectId)
+          && this.activeProjects.some(project => Number(project.id) === Number(routeProjectId))) {
+          this.selectedProjectId = routeProjectId;
+          await this.reloadBoard();
+          return;
+        }
+
+        await this.openTaskFromRouteIfNeeded();
+      }
+    }
+  },
+
   async mounted() {
     this.createTaskModal = new Modal(document.getElementById('createTaskModal'));
     this.createColumnModal = new Modal(document.getElementById('createColumnModal'));
@@ -700,6 +717,7 @@ export default {
         this.members = membersResponse.data || [];
         this.boardColumns = columnsResponse.data || [];
         this.tasks = tasksResponse.data || [];
+        await this.openTaskFromRouteIfNeeded();
       } catch (error) {
         this.errorMessage = this.extractErrorMessage(error, 'Board konnte nicht geladen werden.');
       } finally {
@@ -786,6 +804,21 @@ export default {
 
     async openTaskDetails(task) {
       await this.$refs.taskDetailsModal.open(task);
+    },
+
+    async openTaskFromRouteIfNeeded() {
+      const routeTaskId = Number(this.$route.query.taskId || 0) || null;
+      if (!routeTaskId) {
+        return;
+      }
+
+      const task = this.tasks.find((entry) => Number(entry.id) === Number(routeTaskId));
+      if (!task) {
+        return;
+      }
+
+      await this.$nextTick();
+      await this.$refs.taskDetailsModal?.open(task);
     },
 
     roleBadgeClass(role) {

@@ -12,9 +12,23 @@
             <p class="mb-0" style="white-space: pre-line;">{{ message }}</p>
           </div>
 
-          <div class="modal-footer">
-            <button type="button" class="btn btn-secondary" @click="cancel">{{ cancelLabel }}</button>
-            <button type="button" class="btn" :class="confirmButtonClass" @click="confirm">{{ confirmLabel }}</button>
+          <div class="modal-footer flex-wrap justify-content-end gap-2">
+            <template v-if="actionButtons.length">
+              <button
+                v-for="button in actionButtons"
+                :key="button.value"
+                type="button"
+                class="btn"
+                :class="button.className || `btn-${button.variant || 'primary'}`"
+                @click="resolveWith(button.value)"
+              >
+                {{ button.label }}
+              </button>
+            </template>
+            <template v-else>
+              <button type="button" class="btn btn-secondary" @click="cancel">{{ cancelLabel }}</button>
+              <button type="button" class="btn" :class="confirmButtonClass" @click="confirm">{{ confirmLabel }}</button>
+            </template>
           </div>
         </div>
       </div>
@@ -35,7 +49,9 @@ export default {
       confirmLabel: 'Bestätigen',
       cancelLabel: 'Abbrechen',
       confirmVariant: 'primary',
-      resolver: null
+      actionButtons: [],
+      resolver: null,
+      defaultResolveValue: false
     };
   },
   computed: {
@@ -58,29 +74,32 @@ export default {
       this.confirmLabel = options.confirmLabel || 'Bestätigen';
       this.cancelLabel = options.cancelLabel || 'Abbrechen';
       this.confirmVariant = options.confirmVariant || 'primary';
+      this.actionButtons = Array.isArray(options.buttons) ? options.buttons : [];
+      this.defaultResolveValue = Object.prototype.hasOwnProperty.call(options, 'defaultResolveValue')
+        ? options.defaultResolveValue
+        : false;
 
       return new Promise((resolve) => {
         this.resolver = resolve;
         this.modalInstance.show();
       });
     },
-    confirm() {
+    resolveWith(value) {
       if (this.resolver) {
-        this.resolver(true);
+        this.resolver(value);
         this.resolver = null;
       }
       this.modalInstance.hide();
     },
+    confirm() {
+      this.resolveWith(true);
+    },
     cancel() {
-      if (this.resolver) {
-        this.resolver(false);
-        this.resolver = null;
-      }
-      this.modalInstance.hide();
+      this.resolveWith(false);
     },
     onHidden() {
       if (this.resolver) {
-        this.resolver(false);
+        this.resolver(this.defaultResolveValue);
         this.resolver = null;
       }
     }

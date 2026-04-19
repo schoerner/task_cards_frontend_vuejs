@@ -1,10 +1,15 @@
-import api from '../../../../../../../../Downloads/task_app_Terminfindung_cleaned/task_cards_frontend_vuejs/src/services/api.js';
+import api from './api.js';
 import TaskAppConfig from '@/task_app.config.js';
 
 const API_URL = `${TaskAppConfig.baseUrl()}/tasks`;
+const POLL_API_URL = `${TaskAppConfig.baseUrl()}/task-polls`;
 const PUBLIC_API_URL = `${TaskAppConfig.baseUrl().replace('/v1', '/public/v1')}/task-polls/respond`;
 
 class TaskPollService {
+  getOwnedPolls() {
+    return api.get(`${POLL_API_URL}/owned`);
+  }
+
   getPollByTask(taskId) {
     return api.get(`${API_URL}/${taskId}/poll`);
   }
@@ -17,16 +22,20 @@ class TaskPollService {
     return api.post(`${API_URL}/${taskId}/poll/finalize`, payload);
   }
 
+  sendFinalizationNotification(taskId, payload) {
+    return api.post(`${API_URL}/${taskId}/poll/finalization-notification/send`, payload);
+  }
+
   deletePoll(taskId) {
     return api.delete(`${API_URL}/${taskId}/poll`);
   }
 
-  sendInvitations(taskId) {
-    return api.post(`${API_URL}/${taskId}/poll/invitations/send`, {});
+  sendInvitations(taskId, payload) {
+    return api.post(`${API_URL}/${taskId}/poll/invitations/send`, payload || {});
   }
 
-  sendReminders(taskId) {
-    return api.post(`${API_URL}/${taskId}/poll/reminders/send`, {});
+  sendReminders(taskId, payload) {
+    return api.post(`${API_URL}/${taskId}/poll/reminders/send`, payload || {});
   }
 
   getPublicPoll(token) {
